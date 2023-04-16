@@ -1,0 +1,154 @@
+\documentclass{article}
+
+\usepackage{polski}
+\usepackage[margin=1.35in]{geometry}
+
+\author{Grzegorz Płaczek (148071), Łukasz Kania (148077)}
+\title{Opis algorytmu rozwiązującego problem rozproszonej sekcji krytycznej o rozmiarze N}
+
+\begin{document}
+    \maketitle
+
+    \section{Algorytm}
+
+    Z racji na mało precyzyjny sposób opisu problemu, przygotowaliśmy różne warianty w zależności od różnych założeń, które mogliśmy przyjąć.
+    Zdecydowaliśmy się na takie podejście, gdyż nie byliśmy pewni czy "łatwiejsza" opcja będzie akceptowalna.
+
+    \subsection{Przydział fuchy do krasnali}
+
+    Wszystkie fuchy są nierozróżnialne i każdy krasnal jest w stanie przyjąć każdą fuchę.
+    Potraktowaliśmy ten problem jak problem rozproszonej sekcji krytycznej o zmiennym rozmiarze zależnym od liczby dostępnych fuch
+
+    Krasnal wysyła do wszystkich innych krasnali wiadomość \texttt{REQ} wraz z wartością zegara Lamporta.
+    Dzieje się tak niezależnie od tego czy zadania są już dostępne czy jeszcze nie.
+    Krasnal czeka dopóki nie otrzyma \texttt{K-N} wiadomości \texttt{ACK} od swoich kolegów.
+    Kiedy to się stanie, krasnal przyjmuję fuchę, następnie powiadamia swoich kolegów o tym, że liczba fuch w puli się zmniejszyła, jednocześnie (w ramach tej samej wiadomości) wysyła \texttt{ACK} do swoich kolegów, którzy mieli mniejszy priorytet od niego.
+    Sam krasnal wysyła \texttt{ACK} tylko wtedy, gdy jego priorytet jest mniejszy, po przyjęciu roboty i powiadomieniu o tym pozostałych krasnali lub jeżeli krasnal w danym momencie nie ubiega się o przyjęcie fuchy.
+
+    \subsection{Przydział krasnala do portalu}
+
+    Przydział krasnala do portalu jest prostszy ze względu na fakt, że sekcja krytyczna ma stały rozmiar, który jest w pełni dostępny w momencie uruchomienia aplikacji.
+    W tym przypadku również wybraliśmy specjalnie dostosowany algorytm Ricarta-Agrawali.
+
+    Krasnal w pierwszej kolejności deklaruje chęć zajęcia portalu wysyłając \texttt{REQ} do wszystkich pozostałych krasnali.
+    Pozostałe krasnale odsyłają mu \texttt{ACK} jeżeli nie ubiegają się o dostęp do portalu, mają niższy priorytet.
+    Krasnal po wykonaniu fuchy i zwolnieniu portalu, wysyła \texttt{ACK} do wszystkich krasnali, którym wcześniej takiej wiadomości nie wysłał ze względu na ich niższy priorytet.
+
+    \section{Pseudokod}
+
+    \begin{verbatim}
+        K: const int = config("liczba krasnali")
+        P: const int = config("liczba portali")
+        S: const int = config("liczba skansenów")
+        ID: const int = config("numer węzła")
+
+        n_jobs: int = 0
+
+        atomic fn update_jobs(n: int) {
+            n_jobs += n
+        }
+
+        fn take_job() {
+            ack_count: int = 0
+            time: timestamp = lamport_now()
+            pending_req: list
+
+            for id in krasnoludy {
+                if id != ID {
+                    send_req_job(id, ID, time)
+                }
+            }
+
+            while ack_count < K - n_jobs {
+                message = wait_for_message()
+                if message == REQ_PORTAL {
+                    send_ack_portal(message.id)
+                } else if message == NEW_JOB {
+                    update_jobs(1)
+                } else if message == ACK_JOB {
+                    ack_count += 1
+                } else if message == TAKE_JOB {
+                    update_jobs(-1)
+                } else if message == ACK_TAKE_JOB {
+                    ack_count += 1
+                    update_jobs(-1)
+                } else if message == REQ_JOB {
+                    if message.time < time {
+                        send_ack_job(message.id)
+                    } else {
+                        pending_req.push(message.id)
+                    }
+                }
+            }
+
+            update_jobs(-1)
+
+            for id in krasnoludy {
+                if id in pending_req {
+                    send_ack_take_job(id)
+                } else if id != ID {
+                    send_take_job(id)
+                }
+            }
+        }
+
+        fn take_portal() {
+            ack_count: int = 0
+            time: timestamp = lamport_now()
+            pending_req: list
+
+            for id in krasnoludy {
+                if id != ID {
+                    send_req_portal(id)
+                }
+            }
+
+            while ack_count < K - P {
+                message = wait_for_message()
+                if message == ACK_PORTAL {
+                    ack_count += 1
+                } else if message == REQ_JOB {
+                    send_ack_job(message.id)
+                } else if message == NEW_JOB {
+                    update_jobs(1)
+                } else if message == TAKE_JOB {
+                    update_jobs(-1)
+                } else if message == REQ_PORTAL {
+                    if message.time < time {
+                        send_ack_portal(message.id)
+                    } else {
+                        pending_req.push(message.id)
+                    }
+                }
+            }
+
+            do_the_job()
+
+            for message in messages_nowait() {
+                if message == REQ_JOB {
+                    send_ack_job(message.id)
+                } else if message == REQ_PORTAL {
+                    send_ack_portal(message.id)
+                } else if message == NEW_JOB {
+                    update_jobs(1)
+                } else if message == TAKE_JOB {
+                    update_jobs(-1)
+                }
+            }
+
+            for id in krasnoludy {
+                if id in pending_req {
+                    send_ack_portal(message.id)
+                }
+            }
+        }
+
+        fn main_loop() {
+            while true {
+                take_job()
+                take_portal()
+            }
+        }
+    \end{verbatim}
+
+\end{document}
