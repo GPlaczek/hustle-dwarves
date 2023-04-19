@@ -1,7 +1,11 @@
 \documentclass{article}
 
 \usepackage{polski}
-\usepackage[margin=1.35in]{geometry}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{multicol}
+
+\usepackage[margin=1.0in]{geometry}
 
 \author{Grzegorz Płaczek (148071), Łukasz Kania (148077)}
 \title{Opis algorytmu rozwiązującego problem rozproszonej sekcji krytycznej o rozmiarze N}
@@ -11,21 +15,32 @@
 
     \section{Algorytm}
 
-    Z racji na mało precyzyjny sposób opisu problemu, przygotowaliśmy różne warianty w zależności od różnych założeń, które mogliśmy przyjąć.
-    Zdecydowaliśmy się na takie podejście, gdyż nie byliśmy pewni czy "łatwiejsza" opcja będzie akceptowalna.
+    W przypadku obu sekcji krytycznych zdecydowaliśmy się wybrać odpowiednio dostosowany algorytm Ricarta-Agrawali.
 
-    \subsection{Przydział fuchy do krasnali}
+    \subsection{Przydział fuchy do krasnala}
 
-    Wszystkie fuchy są nierozróżnialne i każdy krasnal jest w stanie przyjąć każdą fuchę.
-    Potraktowaliśmy ten problem jak problem rozproszonej sekcji krytycznej o zmiennym rozmiarze zależnym od liczby dostępnych fuch
+    \begin{enumerate}
+        \item Krasnal, który chce ubiegać się o fuchę wysyła \texttt{REQ\_JOB} wraz z wartością zegara Lamporta do wszystkich pozostałych krasnali i czeka na odpowiedzi.
+        Robi to niezależnie od tego, czy dostępne dostępne są jakiekolwiek fuchy.
+        \item Krasnal kończy oczekiwanie po otrzymaniu \texttt{K-N} (\texttt{K} to liczba krasnali \texttt{N} to liczba dostępnych fuch) wiadomości \texttt{ACK\_JOB}.
+        Liczba \texttt{N} może się zmieniać w trakcie oczekiwania.
+        \item W czasie oczekiwania, krasnal odpowiednio zwiększa swój lokalny licznik dostępnych fuch po otrzymaniu wiadomosci \texttt{NEW\_JOB} od skansenu.
+        Zwiększa też swój licznik odebranych wiadomości \texttt{ACK\_JOB} za każdym razem, gdy otrzyma taką wiadomość, jednocześnie zmniejszając \texttt{N}
+        \item Po zakończeniu oczekiwania, krasnal zmniejsza licznik dostępnych fuch i powiadamia o tym wszystkie inne krasnale.
+        W ramach tej samej wiadomości wysyła również \texttt{ACK\_JOB} do krasnali, którym wcześniej nie wysłał takich wiadomości ze względu na ich niższy priorytet.
+    \end{enumerate}
 
-    Krasnal wysyła do wszystkich innych krasnali wiadomość \texttt{REQ} wraz z wartością zegara Lamporta.
-    Dzieje się tak niezależnie od tego czy zadania są już dostępne czy jeszcze nie.
-    Krasnal czeka dopóki nie otrzyma \texttt{K-N} wiadomości \texttt{ACK} od swoich kolegów.
-    Kiedy to się stanie, krasnal przyjmuję fuchę, następnie powiadamia swoich kolegów o tym, że liczba fuch w puli się zmniejszyła, jednocześnie (w ramach tej samej wiadomości) wysyła \texttt{ACK} do swoich kolegów, którzy mieli mniejszy priorytet od niego.
-    Sam krasnal wysyła \texttt{ACK} tylko wtedy, gdy jego priorytet jest mniejszy, po przyjęciu roboty i powiadomieniu o tym pozostałych krasnali lub jeżeli krasnal w danym momencie nie ubiega się o przyjęcie fuchy.
+    W trakcie trwania tego procesu, krasnal akceptuje wszystkie przychodzące prośby o dostanie się do portalu.
 
     \subsection{Przydział krasnala do portalu}
+
+    \begin{enumerate}
+        \item Krasnal, który chce ubiegać się o dostęp do portalu wysyła \texttt{REQ\_PORTAL} do wszystkich pozostałych krasnali i czeka na odpowiedzi.
+        \item Krasnal kończy oczekiwanie po otrzymaniu \texttt{K-P} (\texttt{P} to liczba portali) wiadomości \texttt{ACK\_PORTAL}. Liczba \texttt{P} jest stała.
+        \item W trakcie oczekiwania, krasnal zwiększa swój licznik wiadomości \texttt{ACK\_PORTAL} każdorazowo po otrzymaniu takiej wiadomości.
+        \item Po zakończeniu oczekiwania, krasnal wysyła \texttt{ACK\_PORTAL} do wszystkich krasnali, którym wcześniej nie wysłał takich wiadomości ze względu na ich niższy priorytet.
+        \item Następnie krasnal bierze się do roboty a po jej skończeniu ponownie ubiega się o nową fuchę.
+    \end{enumerate}
 
     Przydział krasnala do portalu jest prostszy ze względu na fakt, że sekcja krytyczna ma stały rozmiar, który jest w pełni dostępny w momencie uruchomienia aplikacji.
     W tym przypadku również wybraliśmy specjalnie dostosowany algorytm Ricarta-Agrawali.
@@ -34,121 +49,65 @@
     Pozostałe krasnale odsyłają mu \texttt{ACK} jeżeli nie ubiegają się o dostęp do portalu, mają niższy priorytet.
     Krasnal po wykonaniu fuchy i zwolnieniu portalu, wysyła \texttt{ACK} do wszystkich krasnali, którym wcześniej takiej wiadomości nie wysłał ze względu na ich niższy priorytet.
 
+    \newpage
+
     \section{Pseudokod}
 
-    \begin{verbatim}
-        K: const int = config("liczba krasnali")
-        P: const int = config("liczba portali")
-        S: const int = config("liczba skansenów")
-        ID: const int = config("numer węzła")
+    \begin{algorithmic}[1]
+        \State $K$ := liczba krasnali \Comment{Start}
+        \State $P$ := liczba portali
+        \State $S$ := liczba skansenów
+        \State $ID$ := identyfikator węzła
 
-        n_jobs: int = 0
+        \State $nJobs$ := 0
+        \State $clk$ := lamportInit()
 
-        atomic fn update_jobs(n: int) {
-            n_jobs += n
-        }
-
-        fn take_job() {
-            ack_count: int = 0
-            time: timestamp = lamport_now()
-            pending_req: list
-
-            for id in krasnoludy {
-                if id != ID {
-                    send_req_job(id, ID, time)
-                }
-            }
-
-            while ack_count < K - n_jobs {
-                message = wait_for_message()
-                if message == REQ_PORTAL {
-                    send_ack_portal(message.id)
-                } else if message == NEW_JOB {
-                    update_jobs(1)
-                } else if message == ACK_JOB {
-                    ack_count += 1
-                } else if message == TAKE_JOB {
-                    update_jobs(-1)
-                } else if message == ACK_TAKE_JOB {
-                    ack_count += 1
-                    update_jobs(-1)
-                } else if message == REQ_JOB {
-                    if message.time < time {
-                        send_ack_job(message.id)
-                    } else {
-                        pending_req.push(message.id)
-                    }
-                }
-            }
-
-            update_jobs(-1)
-
-            for id in krasnoludy {
-                if id in pending_req {
-                    send_ack_take_job(id)
-                } else if id != ID {
-                    send_take_job(id)
-                }
-            }
-        }
-
-        fn take_portal() {
-            ack_count: int = 0
-            time: timestamp = lamport_now()
-            pending_req: list
-
-            for id in krasnoludy {
-                if id != ID {
-                    send_req_portal(id)
-                }
-            }
-
-            while ack_count < K - P {
-                message = wait_for_message()
-                if message == ACK_PORTAL {
-                    ack_count += 1
-                } else if message == REQ_JOB {
-                    send_ack_job(message.id)
-                } else if message == NEW_JOB {
-                    update_jobs(1)
-                } else if message == TAKE_JOB {
-                    update_jobs(-1)
-                } else if message == REQ_PORTAL {
-                    if message.time < time {
-                        send_ack_portal(message.id)
-                    } else {
-                        pending_req.push(message.id)
-                    }
-                }
-            }
-
-            do_the_job()
-
-            for message in messages_nowait() {
-                if message == REQ_JOB {
-                    send_ack_job(message.id)
-                } else if message == REQ_PORTAL {
-                    send_ack_portal(message.id)
-                } else if message == NEW_JOB {
-                    update_jobs(1)
-                } else if message == TAKE_JOB {
-                    update_jobs(-1)
-                }
-            }
-
-            for id in krasnoludy {
-                if id in pending_req {
-                    send_ack_portal(message.id)
-                }
-            }
-        }
-
-        fn main_loop() {
-            while true {
-                take_job()
-                take_portal()
-            }
-        }
-    \end{verbatim}
-
+        \While{True}
+            \State $nAck$ := 0
+            \State $ackQ$ := emptyQueue()
+            \State sendReqJobToAll()
+            \While{$nAck < K - nJobs$} \Comment{Fucha}
+                \State $msg$, $id$ := receiveMsg()
+                \If{$msg = REQ\_PORTAL$}
+                    \State sendAckPortal(id)
+                \ElsIf{$msg = REQ\_JOB(l)$}
+                    \If{$l < clk$}
+                        \State sendAckJob
+                    \Else
+                        \State $ackQ$.push($id$)
+                    \EndIf
+                \ElsIf{$msg = NEW\_JOB$}
+                    \State atomic($nJobs += 1$)
+                \ElsIf{$msg = ACK\_JOB(free)$}
+                    \If{$free$}
+                        \State $nAck$ +=1
+                        \State atomic($nJobs -= 1$)
+                    \Else
+                        \State $nAck$ += 1
+                    \EndIf
+                \EndIf
+            \EndWhile
+            % \State \columnsep
+            \State $nAck$ := 0
+            \While{$nAck < K - P$} \Comment{Portal}
+                \State $msg$, $id$ := receiveMsg()
+                \If{$msg = REQ\_JOB$}
+                    \State sendAckPortal(id)
+                \ElsIf{$msg = REQ\_PORTAL(l)$}
+                    \If{$l < clk$}
+                        \State sendAckJob
+                    \Else
+                        \State $ackQ$.push($id$)
+                    \EndIf
+                \ElsIf{$msg = NEW\_JOB$}
+                    \State atomic($nJobs += 1$)
+                \ElsIf{$msg = ACK\_PORTAL$}
+                    \State $nAck$ +=1
+                \ElsIf{$msg = TAKE\_JOB$}
+                    \State atomic($nJobs -= 1$)
+                \EndIf
+            \EndWhile
+            \State parallel(DoTheJob, ackJobs, updateNJobs)
+        \EndWhile
+        \end{algorithmic}
 \end{document}
