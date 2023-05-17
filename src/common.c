@@ -18,13 +18,13 @@ struct tagNames_t {
     const char *name;
     int tag;
 } tagNames[] = {
-    {"nowe zlecenie", NEW_JOB},
-    {"prośba o zlecenie", REQ_JOB},
-    {"potwierdzenie zlecenia", ACK_JOB},
-    {"wydanie zlecenia", TAKE},
-    {"rezerwacja zlecenia", RESERVE},
-    {"prośba o portal", REQ_PORTAL},
-    {"potwierdzenie portalu", ACK_PORTAL}
+    {"new job", NEW_JOB},
+    {"job request", REQ_JOB},
+    {"job acknowledge", ACK_JOB},
+    {"job take", TAKE},
+    {"job reserve", RESERVE},
+    {"portal request", REQ_PORTAL},
+    {"portal acknowledge", ACK_PORTAL}
 };
 
 
@@ -66,7 +66,7 @@ void sendPacket(packet_t *pkt, int destination, int tag) {
     pkt->ts = lamport_time;
 
     MPI_Send(pkt, 1, MPI_PACKET_T, destination, tag, MPI_COMM_WORLD);
-    debug("Wysyłam %s do %d\n", tag2string(tag), destination);
+    debug("Sending %s do %d\n", tag2string(tag), destination);
 
     if (freepkt) {
         free(pkt);

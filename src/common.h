@@ -11,14 +11,22 @@
 #define TRUE        1
 #define FALSE       0
 
+
+extern int rank;
+extern int size;
+extern int lamport_time;
+
+
+
+
 #ifdef DEBUG
-#define debug(FORMAT,...) printf("%c[%d;%dm [lamport: %d] [%d]: " FORMAT "%c[%d;%dm\n",  27, (1+(rank/7))%2, 31+(6+rank)%7, lamport_time, rank, ##__VA_ARGS__, 27,0,37);
+#define debug(FORMAT,...) printf("%c[%d;%dm [ts: %d] [%d] " TAG ": " FORMAT "%c[%d;%dm\n",  27, (1+(rank/7))%2, 31+(6+rank)%7, lamport_time, rank, ##__VA_ARGS__, 27,0,37);
 #else
 #define debug(...) ;
 #endif
 
 // makro println - to samo co debug, ale wyświetla się zawsze
-#define println(FORMAT,...) printf("%c[%d;%dm [lamport: %d] [%d]: " FORMAT "%c[%d;%dm\n",  27, (1+(rank/7))%2, 31+(6+rank)%7, lamport_time, rank, ##__VA_ARGS__, 27,0,37);
+#define println(FORMAT,...) printf("%c[%d;%dm [ts: %d] [%d] " TAG ": " FORMAT "%c[%d;%dm\n",  27, (1+(rank/7))%2, 31+(6+rank)%7, lamport_time, rank, ##__VA_ARGS__, 27,0,37);
 
 
 
@@ -44,7 +52,7 @@ typedef enum {
     generateJob,
     sendNewJob,
     waitForReserve,
-    waitForJob,
+    newJobArrived,
     waitForJobAccess,
     onDuty,
     waitForPortal,
@@ -53,12 +61,6 @@ typedef enum {
 } state_t;
 
 
-
-
-
-extern int rank;
-extern int size;
-extern int lamport_time;
 
 
 extern MPI_Datatype MPI_PACKET_T;

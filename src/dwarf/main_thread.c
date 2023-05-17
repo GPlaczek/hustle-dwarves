@@ -1,14 +1,20 @@
 #include "main.h"
 #include "main_thread.h"
+#include "../queue.h"
 
 void mainLoop() {
     srandom(rank);
-    int tag;
-    int perc;
 
-    debug("Main thread Museum start\n");
+    Queue jobs;
+    initQueue(&jobs);
 
-    // while (state != inFinish) {
+    debug("Main thread Museum start");
 
-    // }
+    while (state != inFinish) {
+        switch (state) {
+            case newJobArrived:
+
+                break;
+        }
+    }
 }

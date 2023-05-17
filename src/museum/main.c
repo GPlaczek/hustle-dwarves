@@ -6,6 +6,10 @@
 // int rank, size;
 // int lamport_time = 0;
 
+
+sem_t jobReserveMut;
+
+
 pthread_t threadComm;
 
 void check_thread_support(int provided);
@@ -15,6 +19,9 @@ void finalize();
 int main(int argc, char **argv) {
     MPI_Status status;
     int provided;
+
+    sem_init(&jobReserveMut, 0, 1);
+
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
     check_thread_support(provided);
 
@@ -23,6 +30,10 @@ int main(int argc, char **argv) {
     init_packet_type();
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+
+    changeState(generateJob);
+    
 
     pthread_create(&threadComm, NULL, startCommThread, 0);
 

@@ -110,6 +110,7 @@ MAIN_H	src/dwarf/main.h	/^#define MAIN_H$/;"	d
 MAIN_H	src/museum/main.h	/^#define MAIN_H$/;"	d
 MAIN_THREAD_H	src/dwarf/main_thread.h	/^#define MAIN_THREAD_H$/;"	d
 MAIN_THREAD_H	src/museum/main_thread.h	/^#define MAIN_THREAD_H$/;"	d
+MAX_SIZE	src/queue.h	/^#define MAX_SIZE /;"	d
 MPI_PACKET_T	src/common.c	/^MPI_Datatype MPI_PACKET_T;$/;"	v	typeref:typename:MPI_Datatype
 MUSEUM_SRC_DIR	Makefile	/^MUSEUM_SRC_DIR = $(SOURCES_DIR)\/museum$/;"	m
 NEW_JOB	src/common.h	/^#define NEW_JOB /;"	d
@@ -117,6 +118,8 @@ NITEMS	src/common.h	/^#define NITEMS /;"	d
 Przydział fuchy do krasnala	description/algorithm.tex	/^    \\subsection{Przydział fuchy do krasnala}$/;"	u	section:Algorytm
 Przydział krasnala do portalu	description/algorithm.tex	/^    \\subsection{Przydział krasnala do portalu}$/;"	u	section:Algorytm
 Pseudokod	description/algorithm.tex	/^    \\section{Pseudokod}$/;"	s
+QUEUE_H	src/queue.h	/^#define QUEUE_H$/;"	d
+Queue	src/queue.h	/^} Queue;$/;"	t	typeref:struct:__anon1fbf87770108
 REQ_JOB	src/common.h	/^#define REQ_JOB /;"	d
 REQ_PORTAL	src/common.h	/^#define REQ_PORTAL /;"	d
 RESERVE	src/common.h	/^#define RESERVE /;"	d
@@ -127,6 +130,7 @@ SOURCES_MUSEUM	Makefile	/^SOURCES_MUSEUM = $(SOURCES) $(wildcard $(MUSEUM_SRC_DI
 TAKE	src/common.h	/^#define TAKE /;"	d
 TRUE	src/common.h	/^#define TRUE /;"	d
 The problem	README.md	/^# The problem$/;"	c
+__anon1fbf87770108	src/queue.h	/^typedef struct {$/;"	s
 __anon70586b7b0108	src/common.h	/^typedef struct {$/;"	s
 __anon70586b7b0203	src/common.h	/^typedef enum {$/;"	g
 all	Makefile	/^all: main tags$/;"	t
@@ -137,14 +141,22 @@ clean	Makefile	/^clean:$/;"	t
 clear	Makefile	/^clear: clean$/;"	t
 comm_thread.h	.vscode/settings.json	/^        "comm_thread.h": "c",$/;"	s	object:files.associations
 data	src/common.h	/^    int data;$/;"	m	struct:__anon70586b7b0108	typeref:typename:int
+data	src/queue.h	/^    int data[MAX_SIZE];$/;"	m	struct:__anon1fbf87770108	typeref:typename:int[]
 debug	src/common.h	/^#define debug(/;"	d
+dequeue	src/queue.c	/^int dequeue(Queue *queue) {$/;"	f	typeref:typename:int
+enqueue	src/queue.c	/^void enqueue(Queue *queue, int item) {$/;"	f	typeref:typename:void
 files.associations	.vscode/settings.json	/^    "files.associations": {$/;"	o
 finalize	src/dwarf/main.c	/^void finalize() {$/;"	f	typeref:typename:void
 finalize	src/museum/main.c	/^void finalize() {$/;"	f	typeref:typename:void
+front	src/queue.h	/^    int front;$/;"	m	struct:__anon1fbf87770108	typeref:typename:int
 generateJob	src/common.h	/^    generateJob,$/;"	e	enum:__anon70586b7b0203
 inFinish	src/common.h	/^    inFinish$/;"	e	enum:__anon70586b7b0203
 inWork	src/common.h	/^    inWork,$/;"	e	enum:__anon70586b7b0203
+initQueue	src/queue.c	/^void initQueue(Queue *queue) {$/;"	f	typeref:typename:void
 init_packet_type	src/common.c	/^void init_packet_type() {$/;"	f	typeref:typename:void
+isEmpty	src/queue.c	/^int isEmpty(Queue *queue) {$/;"	f	typeref:typename:int
+isFull	src/queue.c	/^int isFull(Queue *queue) {$/;"	f	typeref:typename:int
+jobReserveMut	src/museum/main.c	/^sem_t jobReserveMut;$/;"	v	typeref:typename:sem_t
 lamportMut	src/common.c	/^pthread_mutex_t lamportMut = PTHREAD_MUTEX_INITIALIZER;$/;"	v	typeref:typename:pthread_mutex_t
 lamport_time	src/common.c	/^int lamport_time = 0;$/;"	v	typeref:typename:int
 main	Makefile	/^main: $(SOURCES_DWARF) $(SOURCES_MUSEUM) $(HEADERS_DWARF) $(HEADERS_MUSEUM) Makefile$/;"	t
@@ -154,12 +166,13 @@ main.h	.vscode/settings.json	/^        "main.h": "c"$/;"	s	object:files.associat
 mainLoop	src/dwarf/main_thread.c	/^void mainLoop() {$/;"	f	typeref:typename:void
 mainLoop	src/museum/main_thread.c	/^void mainLoop() {$/;"	f	typeref:typename:void
 name	src/common.c	/^    const char *name;$/;"	m	struct:tagNames_t	typeref:typename:const char *	file:
+newJobArrived	src/common.h	/^    newJobArrived,$/;"	e	enum:__anon70586b7b0203
 onDuty	src/common.h	/^    onDuty,$/;"	e	enum:__anon70586b7b0203
 packet_t	src/common.h	/^} packet_t;$/;"	t	typeref:struct:__anon70586b7b0108
 println	src/common.h	/^#define println(/;"	d
 rank	src/common.c	/^int rank;$/;"	v	typeref:typename:int
-run_dwarf	Makefile	/^run_dwarf: main Makefile tags$/;"	t
-run_museum	Makefile	/^run_museum: main Makefile tags$/;"	t
+rear	src/queue.h	/^    int rear;$/;"	m	struct:__anon1fbf87770108	typeref:typename:int
+run	Makefile	/^run: main Makefile tags$/;"	t
 sendNewJob	src/common.h	/^    sendNewJob,$/;"	e	enum:__anon70586b7b0203
 sendPacket	src/common.c	/^void sendPacket(packet_t *pkt, int destination, int tag) {$/;"	f	typeref:typename:void
 size	src/common.c	/^int size;$/;"	v	typeref:typename:int
@@ -177,7 +190,6 @@ tags	Makefile	/^tags: $(SOURCES_DWARF) $(SOURCES_MUSEUM) $(HEADERS_DWARF) $(HEAD
 threadComm	src/dwarf/main.c	/^pthread_t threadComm;$/;"	v	typeref:typename:pthread_t
 threadComm	src/museum/main.c	/^pthread_t threadComm;$/;"	v	typeref:typename:pthread_t
 ts	src/common.h	/^    int ts;         \/\/ timestamp - Lamport clock$/;"	m	struct:__anon70586b7b0108	typeref:typename:int
-waitForJob	src/common.h	/^    waitForJob,$/;"	e	enum:__anon70586b7b0203
 waitForJobAccess	src/common.h	/^    waitForJobAccess,$/;"	e	enum:__anon70586b7b0203
 waitForPortal	src/common.h	/^    waitForPortal,$/;"	e	enum:__anon70586b7b0203
 waitForReserve	src/common.h	/^    waitForReserve,$/;"	e	enum:__anon70586b7b0203

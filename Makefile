@@ -18,8 +18,8 @@ FLAGS=-DDEBUG -g
 all: main tags
 
 main: $(SOURCES_DWARF) $(SOURCES_MUSEUM) $(HEADERS_DWARF) $(HEADERS_MUSEUM) Makefile
-	mpicc $(SOURCES_DWARF) $(FLAGS) -o $(BIN_DIR)/dwarf
-	mpicc $(SOURCES_MUSEUM) $(FLAGS) -o $(BIN_DIR)/museum
+	mpicc $(SOURCES_DWARF) $(FLAGS) -DTAG=\"DWARF\" -o $(BIN_DIR)/dwarf -Wall
+	mpicc $(SOURCES_MUSEUM) $(FLAGS) -DTAG=\"MUSEUM\" -o $(BIN_DIR)/museum -Wall
 	
 
 clear: clean
@@ -30,8 +30,5 @@ clean:
 tags: $(SOURCES_DWARF) $(SOURCES_MUSEUM) $(HEADERS_DWARF) $(HEADERS_MUSEUM)
 	ctags -R .
 
-run_museum: main Makefile tags
-	mpirun -oversubscribe -np 1 ./$(BIN_DIR)/museum
-
-run_dwarf: main Makefile tags
-	mpirun -oversubscribe -np 1 ./$(BIN_DIR)/dwarf
+run: main Makefile tags
+	mpirun -oversubscribe -np 3 ./$(BIN_DIR)/museum : -np 3 ./$(BIN_DIR)/dwarf
