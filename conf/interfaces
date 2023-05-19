@@ -1,0 +1,6 @@
+source-directory /etc/network/interfaces.d
+
+source-directory /run/network/interfaces.d
+
+auto ens4
+iface ens4 inet dhcp
