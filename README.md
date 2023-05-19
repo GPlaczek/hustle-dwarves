@@ -18,6 +18,20 @@ To build `.pdf` description of the algorithm, run:
 cd description && pdflatex algorithm.tex --shell-escape
 ```
 
+# Running
+
+To setup the network and virtual machines for testing the program run `sudo ./test.sh -i <n_nodes>`, where `n_nodes` is a number of virtual machines to start.
+Ip addresses of the virtual machines can be read from `work/leases` file and can be accessed only from the network namsepace.
+To run shell in the network namespace run: `sudo ./test.sh -s`.
+To teardown the setup run: `sudo ./test.sh -t`.
+
+The `test.sh` script requires the following programs:
+
+* `qemu-system-x86_64`
+* `qemu-tools`
+* `dnsmasq`
+* `iproute2`
+
 # Authors
 
 * Grzegorz Płaczek (148071)
