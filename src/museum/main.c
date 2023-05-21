@@ -17,7 +17,7 @@ void finalize();
 
 
 int main(int argc, char **argv) {
-    MPI_Status status;
+    // MPI_Status status;
     int provided;
 
     sem_init(&jobReserveMut, 0, 1);

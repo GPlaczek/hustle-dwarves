@@ -12,14 +12,17 @@ HEADERS_MUSEUM = $(SOURCES_MUSEUM:.c=.h)
 
 BIN_DIR=bin
 
+NO_OF_DWARVES = 2
+NO_OF_MUSEUMS = 1
+
 FLAGS=-DDEBUG -g
 # FLAGS=-g
 
 all: main tags
 
 main: $(SOURCES_DWARF) $(SOURCES_MUSEUM) $(HEADERS_DWARF) $(HEADERS_MUSEUM) Makefile
-	mpicc $(SOURCES_DWARF) $(FLAGS) -DTAG=\"DWARF\" -o $(BIN_DIR)/dwarf -Wall
-	mpicc $(SOURCES_MUSEUM) $(FLAGS) -DTAG=\"MUSEUM\" -o $(BIN_DIR)/museum -Wall
+	mpicc $(SOURCES_DWARF) $(FLAGS) -DTAG=\"DWARF\" -DDWARVES=$(NO_OF_DWARVES) -DMUSEUMS=$(NO_OF_MUSEUMS) -o $(BIN_DIR)/dwarf -Wall
+	mpicc $(SOURCES_MUSEUM) $(FLAGS) -DTAG=\"MUSEUM\" -DDWARVES=$(NO_OF_DWARVES) -DMUSEUMS=$(NO_OF_MUSEUMS) -o $(BIN_DIR)/museum -Wall
 	
 
 clear: clean
@@ -31,4 +34,5 @@ tags: $(SOURCES_DWARF) $(SOURCES_MUSEUM) $(HEADERS_DWARF) $(HEADERS_MUSEUM)
 	ctags -R .
 
 run: main Makefile tags
-	mpirun -oversubscribe -np 3 ./$(BIN_DIR)/museum : -np 3 ./$(BIN_DIR)/dwarf
+	mpirun -oversubscribe -np $(NO_OF_DWARVES) ./$(BIN_DIR)/dwarf : -np $(NO_OF_MUSEUMS) ./$(BIN_DIR)/museum
+#	mpirun -oversubscribe -np 1 ./$(BIN_DIR)/dwarf

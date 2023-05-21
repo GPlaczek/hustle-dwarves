@@ -1,4 +1,5 @@
 #include "queue.h"
+#include <stddef.h>
 
 
 void initQueue(Queue *queue) {
@@ -14,7 +15,7 @@ int isEmpty(Queue *queue) {
     return (queue->front == -1);
 }
 
-void enqueue(Queue *queue, int item) {
+void enqueue(Queue *queue, void *item) {
     if (isFull(queue)) {
         return;
     }
@@ -26,11 +27,11 @@ void enqueue(Queue *queue, int item) {
     queue->data[queue->rear] = item;
 }
 
-int dequeue(Queue *queue) {
-    int item;
+void *dequeue(Queue *queue) {
+    void *item;
 
     if (isEmpty(queue)) {
-        return -1;
+        return NULL;
     }
 
     item = queue->data[queue->front];

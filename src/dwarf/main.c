@@ -2,27 +2,42 @@
 #include "comm_thread.h"
 #include "main_thread.h"
 
-
 // int rank, size;
 // int lamport_time = 0;
 
 pthread_t threadComm;
+pthread_mutex_t queueJobsMut = PTHREAD_MUTEX_INITIALIZER;
+
+pthread_cond_t newJobReceived = PTHREAD_COND_INITIALIZER;
+pthread_cond_t newJobProcessed = PTHREAD_COND_INITIALIZER;
+
+
+sem_t waitNewJobSem;
+Queue jobs;
+
+
 
 void check_thread_support(int provided);
 void finalize();
 
 
 int main(int argc, char **argv) {
-    MPI_Status status;
+    // MPI_Status status;
     int provided;
+
+    sem_init(&waitNewJobSem, 0, 1);
+
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
     check_thread_support(provided);
 
     srand(rank);
 
     init_packet_type();
+    initQueue(&jobs);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    changeState(waitForNewJob);
 
     pthread_create(&threadComm, NULL, startCommThread, 0);
 

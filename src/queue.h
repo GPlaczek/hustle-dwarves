@@ -4,7 +4,7 @@
 #define MAX_SIZE 100
 
 typedef struct {
-    int data[MAX_SIZE];
+    void *data[MAX_SIZE];
     int front;
     int rear;
 } Queue;
@@ -13,7 +13,7 @@ typedef struct {
 void initQueue(Queue *queue);
 int isFull(Queue *queue);
 int isEmpty(Queue *queue);
-void enqueue(Queue *queue, int item);
-int dequeue(Queue *queue);
+void enqueue(Queue *queue, void *item);
+void *dequeue(Queue *queue);
 
 #endif
