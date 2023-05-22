@@ -23,7 +23,7 @@ extern pthread_cond_t newJobReceived;
 extern pthread_cond_t newJobProcessed;
 
 extern sem_t waitNewJobSem;
-extern Queue jobs;
+extern Queue packets;
 
 
 

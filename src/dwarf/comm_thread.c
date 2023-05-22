@@ -6,7 +6,7 @@
 void *startCommThread(void *ptr) {
     MPI_Status status;
 
-    packet_t packet;
+    packet_t packet = {0};
 
     debug("Comm thread Dwarf start");
 
@@ -20,67 +20,69 @@ void *startCommThread(void *ptr) {
 
         switch (status.MPI_TAG) {
             case NEW_JOB:
-                {
-                    debug("new job data: %d src: %d ts: %d", packet.data, packet.src, packet.ts);
-                    
-                    pthread_mutex_lock(&queueJobsMut);
+            {
+                debug("new job src: %d ts: %d museum: %d id: %d", packet.src, packet.ts, packet.museum_id, packet.id);
+                
+                pthread_mutex_lock(&queueJobsMut);
+                packet_t pkt = packet;
 
-                    packet_t job;
-                    job.data = packet.data;
-                    job.src = packet.src;
-                    job.ts = packet.ts;
+                enqueue(&packets, &pkt);
 
-                    enqueue(&jobs, &job);
-                    pthread_cond_signal(&newJobReceived);
-                    pthread_cond_wait(&newJobProcessed, &queueJobsMut);
-                    pthread_mutex_unlock(&queueJobsMut);
+                pthread_cond_signal(&newJobReceived);
+                pthread_cond_wait(&newJobProcessed, &queueJobsMut);
+                pthread_mutex_unlock(&queueJobsMut);
+                break;
+            }
+            case REQ_JOB:
+            {
+                debug("req job arrived: museum: %d request_ts: %d id: %d", packet.museum_id, packet.request_ts, packet.id);
+
+                int job_exists = 0;
+
+                pthread_mutex_lock(&queueJobsMut);
+
+                debug("%d %d", packets.front, packets.rear);
+
+                if (packets.front < 0 || packets.rear < 0) {
+                    sendPacket(&packet, packet.src, ACK_JOB);
                     break;
                 }
-            case REQ_JOB:
-                {
-                    debug("req job arrived: data: %d src: %d ts: %d", packet.data, packet.src, packet.ts);
 
-                    int museum_id = packet.data & 0xFF;
-                    int job_id = (packet.data >> 8) & 0xFFF;
-                    int job_request_ts = (packet.data >> 20) & 0xFFF;
-                    int job_exists = 0;
+                for (int i = packets.front; i <= packets.rear; i++) {
+                    packet_t *job = (packet_t *) packets.data[i];
 
-                    pthread_mutex_lock(&queueJobsMut);
+                    debug("%d", i);
+                    debug("%d %d | %d %d | %d %d", job->id, packet.id, job->museum_id, packet.museum_id, job->request_ts, packet.request_ts);
 
-                    for (int i = jobs.front; i <= jobs.rear; i++) {
-                        packet_t *job = (packet_t *) jobs.data[i];
+                    if (job->id == packet.id && 
+                        job->museum_id == packet.museum_id) {
+                        job_exists = 1;
+                        if (job->request_ts < packet.request_ts) {
+                                packet_t *pkt = malloc(sizeof(packet_t));
 
-                        debug("%d %d | %d %d | %d %d", job->data, job_id, job->src, museum_id, job_request_ts, ((job->ts >> 16) & 0xFFFF));
+                            debug("CHUJ");
+                            pkt = &packet;
+                            sendPacket(pkt, i, ACK_JOB);
 
-                        if (job->data == job_id && 
-                            job->src == museum_id) {
-                            job_exists = 1;
-                            if (job_request_ts < ((job->ts >> 16) & 0xFFFF)) {
-                                 packet_t *pkt = malloc(sizeof(packet_t));
-
-                                pkt->data = packet.data;
-                                sendPacket(pkt, i, ACK_JOB);
-
-                                free(pkt);
-                                break;
-                            }
+                            break;
                         }
                     }
-
-                    if (job_exists == 0) {
-                        sendPacket(&packet, packet.src, ACK_JOB);
-                    }
-
-                    pthread_mutex_unlock(&queueJobsMut);
-
-                    break;
                 }
+
+                if (job_exists == 0) {
+                    sendPacket(&packet, packet.src, ACK_JOB);
+                }
+
+                pthread_mutex_unlock(&queueJobsMut);
+
+                break;
+            }
             case ACK_JOB:
-                {
-                    debug("ack job arrived: data: %d src: %d ts: %d", packet.data, packet.src, packet.ts);
+            {
+                debug("ack job arrived: %d museum: %d id: %d", packet.src, packet.museum_id, packet.id);
 
-                    break;
-                }
+                break;
+            }
             default:
                 break;
         }

@@ -13,7 +13,7 @@ pthread_cond_t newJobProcessed = PTHREAD_COND_INITIALIZER;
 
 
 sem_t waitNewJobSem;
-Queue jobs;
+Queue packets;
 
 
 
@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     srand(rank);
 
     init_packet_type();
-    initQueue(&jobs);
+    initQueue(&packets);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 

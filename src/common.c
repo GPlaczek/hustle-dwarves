@@ -38,13 +38,16 @@ const char *const tag2string(int tag) {
 }
 
 void init_packet_type() {
-    int blocklengths[NITEMS] = {1, 1, 1};
-    MPI_Datatype types[NITEMS] = {MPI_INT, MPI_INT, MPI_INT};
+    int blocklengths[NITEMS] = {1, 1, 1, 1, 1, 1};
+    MPI_Datatype types[NITEMS] = {MPI_INT, MPI_INT, MPI_INT, MPI_INT, MPI_INT, MPI_INT};
 
     MPI_Aint offsets[NITEMS];
     offsets[0] = offsetof(packet_t, ts);
     offsets[1] = offsetof(packet_t, src);
-    offsets[2] = offsetof(packet_t, data);
+    offsets[2] = offsetof(packet_t, museum_id);
+    offsets[3] = offsetof(packet_t, id);
+    offsets[4] = offsetof(packet_t, request_ts);
+    offsets[5] = offsetof(packet_t, ack_count);
 
     MPI_Type_create_struct(NITEMS, blocklengths, offsets, types, &MPI_PACKET_T);
 

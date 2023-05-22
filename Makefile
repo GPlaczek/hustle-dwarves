@@ -12,8 +12,8 @@ HEADERS_MUSEUM = $(SOURCES_MUSEUM:.c=.h)
 
 BIN_DIR=bin
 
-NO_OF_DWARVES = 2
-NO_OF_MUSEUMS = 1
+NO_OF_DWARVES = 3
+NO_OF_MUSEUMS = 2
 
 FLAGS=-DDEBUG -g
 # FLAGS=-g
@@ -34,5 +34,5 @@ tags: $(SOURCES_DWARF) $(SOURCES_MUSEUM) $(HEADERS_DWARF) $(HEADERS_MUSEUM)
 	ctags -R .
 
 run: main Makefile tags
-	mpirun -oversubscribe -np $(NO_OF_DWARVES) ./$(BIN_DIR)/dwarf : -np $(NO_OF_MUSEUMS) ./$(BIN_DIR)/museum
+	mpirun -oversubscribe -np $(NO_OF_MUSEUMS) ./$(BIN_DIR)/museum : -np $(NO_OF_DWARVES) ./$(BIN_DIR)/dwarf
 #	mpirun -oversubscribe -np 1 ./$(BIN_DIR)/dwarf

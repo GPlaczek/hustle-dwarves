@@ -28,21 +28,31 @@ extern int lamport_time;
 // makro println - to samo co debug, ale wyświetla się zawsze
 #define println(FORMAT,...) printf("%c[%d;%dm [ts: %d] [" TAG " %d] " FORMAT "%c[%d;%dm\n",  27, (1+(rank/7))%2, 31+(6+rank)%7, lamport_time, rank, ##__VA_ARGS__, 27,0,37);
 
+typedef struct {
+    int museum_id;  // museum id
+    int id;         // id of job in museum
+    int request_ts; // timestamp of job request
+    int ack_count;  // number of acks for job
+} jobData;
 
+typedef struct {
+    int id;          // portal id
+    int request_ts;   // timestamp of portal request
+    int ack_count;   // number of acks for portal
+} portalData;
 
 typedef struct {
     int ts;         // timestamp - Lamport clock
-    int src;
-    int data;
+    int src;        // packet source
+    
+    int museum_id;
+    int id;
+    int request_ts;
+    int ack_count;
 } packet_t;
 
-typedef struct {
-    int museum_id;
-    int job_id;
-    int job_request_ts;
-} job;
 
-#define NITEMS              3
+#define NITEMS              6
 
 // signals
 #define NEW_JOB             1

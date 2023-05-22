@@ -115,8 +115,8 @@ MPI_PACKET_T	src/common.c	/^MPI_Datatype MPI_PACKET_T;$/;"	v	typeref:typename:MP
 MUSEUM_SRC_DIR	Makefile	/^MUSEUM_SRC_DIR = $(SOURCES_DIR)\/museum$/;"	m
 NEW_JOB	src/common.h	/^#define NEW_JOB /;"	d
 NITEMS	src/common.h	/^#define NITEMS /;"	d
-NO_OF_DWARVES	Makefile	/^NO_OF_DWARVES = 2$/;"	m
-NO_OF_MUSEUMS	Makefile	/^NO_OF_MUSEUMS = 1$/;"	m
+NO_OF_DWARVES	Makefile	/^NO_OF_DWARVES = 3$/;"	m
+NO_OF_MUSEUMS	Makefile	/^NO_OF_MUSEUMS = 2$/;"	m
 Przydział fuchy do krasnala	description/algorithm.tex	/^    \\subsection{Przydział fuchy do krasnala}$/;"	u	section:Algorytm
 Przydział krasnala do portalu	description/algorithm.tex	/^    \\subsection{Przydział krasnala do portalu}$/;"	u	section:Algorytm
 Pseudokod	description/algorithm.tex	/^    \\section{Pseudokod}$/;"	s
@@ -135,15 +135,19 @@ The problem	README.md	/^# The problem$/;"	c
 __anon1fbf87770108	src/queue.h	/^typedef struct {$/;"	s
 __anon70586b7b0108	src/common.h	/^typedef struct {$/;"	s
 __anon70586b7b0208	src/common.h	/^typedef struct {$/;"	s
-__anon70586b7b0303	src/common.h	/^typedef enum {$/;"	g
+__anon70586b7b0308	src/common.h	/^typedef struct {$/;"	s
+__anon70586b7b0403	src/common.h	/^typedef enum {$/;"	g
+ack_count	src/common.h	/^    int ack_count;   \/\/ number of acks for portal$/;"	m	struct:__anon70586b7b0208	typeref:typename:int
+ack_count	src/common.h	/^    int ack_count;  \/\/ number of acks for job$/;"	m	struct:__anon70586b7b0108	typeref:typename:int
+ack_count	src/common.h	/^    int ack_count;$/;"	m	struct:__anon70586b7b0308	typeref:typename:int
 all	Makefile	/^all: main tags$/;"	t
+array	.vscode/settings.json	/^        "array": "c",$/;"	s	object:files.associations
 changeState	src/common.c	/^void changeState(state_t newState) {$/;"	f	typeref:typename:void
 check_thread_support	src/dwarf/main.c	/^void check_thread_support(int provided) {$/;"	f	typeref:typename:void
 check_thread_support	src/museum/main.c	/^void check_thread_support(int provided) {$/;"	f	typeref:typename:void
 clean	Makefile	/^clean:$/;"	t
 clear	Makefile	/^clear: clean$/;"	t
 comm_thread.h	.vscode/settings.json	/^        "comm_thread.h": "c",$/;"	s	object:files.associations
-data	src/common.h	/^    int data;$/;"	m	struct:__anon70586b7b0108	typeref:typename:int
 data	src/queue.h	/^    void *data[MAX_SIZE];$/;"	m	struct:__anon1fbf87770108	typeref:typename:void * []
 debug	src/common.h	/^#define debug(/;"	d
 dequeue	src/queue.c	/^void *dequeue(Queue *queue) {$/;"	f	typeref:typename:void *
@@ -152,47 +156,56 @@ files.associations	.vscode/settings.json	/^    "files.associations": {$/;"	o
 finalize	src/dwarf/main.c	/^void finalize() {$/;"	f	typeref:typename:void
 finalize	src/museum/main.c	/^void finalize() {$/;"	f	typeref:typename:void
 front	src/queue.h	/^    int front;$/;"	m	struct:__anon1fbf87770108	typeref:typename:int
-generateJob	src/common.h	/^    generateJob,$/;"	e	enum:__anon70586b7b0303
-inFinish	src/common.h	/^    inFinish$/;"	e	enum:__anon70586b7b0303
-inWork	src/common.h	/^    inWork,$/;"	e	enum:__anon70586b7b0303
+generateJob	src/common.h	/^    generateJob,$/;"	e	enum:__anon70586b7b0403
+id	src/common.h	/^    int id;          \/\/ portal id$/;"	m	struct:__anon70586b7b0208	typeref:typename:int
+id	src/common.h	/^    int id;         \/\/ id of job in museum$/;"	m	struct:__anon70586b7b0108	typeref:typename:int
+id	src/common.h	/^    int id;$/;"	m	struct:__anon70586b7b0308	typeref:typename:int
+inFinish	src/common.h	/^    inFinish$/;"	e	enum:__anon70586b7b0403
+inWork	src/common.h	/^    inWork,$/;"	e	enum:__anon70586b7b0403
 initQueue	src/queue.c	/^void initQueue(Queue *queue) {$/;"	f	typeref:typename:void
 init_packet_type	src/common.c	/^void init_packet_type() {$/;"	f	typeref:typename:void
 isEmpty	src/queue.c	/^int isEmpty(Queue *queue) {$/;"	f	typeref:typename:int
 isFull	src/queue.c	/^int isFull(Queue *queue) {$/;"	f	typeref:typename:int
-job	src/common.h	/^} job;$/;"	t	typeref:struct:__anon70586b7b0208
+jobData	src/common.h	/^} jobData;$/;"	t	typeref:struct:__anon70586b7b0108
 jobReserveMut	src/museum/main.c	/^sem_t jobReserveMut;$/;"	v	typeref:typename:sem_t
-job_id	src/common.h	/^    int job_id;$/;"	m	struct:__anon70586b7b0208	typeref:typename:int
-job_request_ts	src/common.h	/^    int job_request_ts;$/;"	m	struct:__anon70586b7b0208	typeref:typename:int
-jobs	src/dwarf/main.c	/^Queue jobs;$/;"	v	typeref:typename:Queue
 lamportMut	src/common.c	/^pthread_mutex_t lamportMut = PTHREAD_MUTEX_INITIALIZER;$/;"	v	typeref:typename:pthread_mutex_t
 lamport_time	src/common.c	/^int lamport_time = 0;$/;"	v	typeref:typename:int
 main	Makefile	/^main: $(SOURCES_DWARF) $(SOURCES_MUSEUM) $(HEADERS_DWARF) $(HEADERS_MUSEUM) Makefile$/;"	t
 main	src/dwarf/main.c	/^int main(int argc, char **argv) {$/;"	f	typeref:typename:int
 main	src/museum/main.c	/^int main(int argc, char **argv) {$/;"	f	typeref:typename:int
-main.h	.vscode/settings.json	/^        "main.h": "c"$/;"	s	object:files.associations
+main.h	.vscode/settings.json	/^        "main.h": "c",$/;"	s	object:files.associations
 mainLoop	src/dwarf/main_thread.c	/^void mainLoop() {$/;"	f	typeref:typename:void
 mainLoop	src/museum/main_thread.c	/^void mainLoop() {$/;"	f	typeref:typename:void
-museum_id	src/common.h	/^    int museum_id;$/;"	m	struct:__anon70586b7b0208	typeref:typename:int
+museum_id	src/common.h	/^    int museum_id;  \/\/ museum id$/;"	m	struct:__anon70586b7b0108	typeref:typename:int
+museum_id	src/common.h	/^    int museum_id;$/;"	m	struct:__anon70586b7b0308	typeref:typename:int
 name	src/common.c	/^    const char *name;$/;"	m	struct:tagNames_t	typeref:typename:const char *	file:
-newJobArrived	src/common.h	/^    newJobArrived,$/;"	e	enum:__anon70586b7b0303
+newJobArrived	src/common.h	/^    newJobArrived,$/;"	e	enum:__anon70586b7b0403
 newJobProcessed	src/dwarf/main.c	/^pthread_cond_t newJobProcessed = PTHREAD_COND_INITIALIZER;$/;"	v	typeref:typename:pthread_cond_t
 newJobReceived	src/dwarf/main.c	/^pthread_cond_t newJobReceived = PTHREAD_COND_INITIALIZER;$/;"	v	typeref:typename:pthread_cond_t
-onDuty	src/common.h	/^    onDuty,$/;"	e	enum:__anon70586b7b0303
-packet_t	src/common.h	/^} packet_t;$/;"	t	typeref:struct:__anon70586b7b0108
+onDuty	src/common.h	/^    onDuty,$/;"	e	enum:__anon70586b7b0403
+packet_t	src/common.h	/^} packet_t;$/;"	t	typeref:struct:__anon70586b7b0308
+packets	src/dwarf/main.c	/^Queue packets;$/;"	v	typeref:typename:Queue
+portalData	src/common.h	/^} portalData;$/;"	t	typeref:struct:__anon70586b7b0208
 println	src/common.h	/^#define println(/;"	d
 queueJobsMut	src/dwarf/main.c	/^pthread_mutex_t queueJobsMut = PTHREAD_MUTEX_INITIALIZER;$/;"	v	typeref:typename:pthread_mutex_t
 rank	src/common.c	/^int rank;$/;"	v	typeref:typename:int
 rear	src/queue.h	/^    int rear;$/;"	m	struct:__anon1fbf87770108	typeref:typename:int
+request_ts	src/common.h	/^    int request_ts;   \/\/ timestamp of portal request$/;"	m	struct:__anon70586b7b0208	typeref:typename:int
+request_ts	src/common.h	/^    int request_ts; \/\/ timestamp of job request$/;"	m	struct:__anon70586b7b0108	typeref:typename:int
+request_ts	src/common.h	/^    int request_ts;$/;"	m	struct:__anon70586b7b0308	typeref:typename:int
 run	Makefile	/^run: main Makefile tags$/;"	t
-sendNewJob	src/common.h	/^    sendNewJob,$/;"	e	enum:__anon70586b7b0303
+sendNewJob	src/common.h	/^    sendNewJob,$/;"	e	enum:__anon70586b7b0403
 sendPacket	src/common.c	/^void sendPacket(packet_t *pkt, int destination, int tag) {$/;"	f	typeref:typename:void
 size	src/common.c	/^int size;$/;"	v	typeref:typename:int
-src	src/common.h	/^    int src;$/;"	m	struct:__anon70586b7b0108	typeref:typename:int
+span	.vscode/settings.json	/^        "span": "c"$/;"	s	object:files.associations
+src	src/common.h	/^    int src;        \/\/ packet source$/;"	m	struct:__anon70586b7b0308	typeref:typename:int
 startCommThread	src/dwarf/comm_thread.c	/^void *startCommThread(void *ptr) {$/;"	f	typeref:typename:void *
 startCommThread	src/museum/comm_thread.c	/^void *startCommThread(void *ptr) {$/;"	f	typeref:typename:void *
 state	src/common.c	/^state_t state;$/;"	v	typeref:typename:state_t
 stateMut	src/common.c	/^pthread_mutex_t stateMut = PTHREAD_MUTEX_INITIALIZER;$/;"	v	typeref:typename:pthread_mutex_t
-state_t	src/common.h	/^} state_t;$/;"	t	typeref:enum:__anon70586b7b0303
+state_t	src/common.h	/^} state_t;$/;"	t	typeref:enum:__anon70586b7b0403
+string	.vscode/settings.json	/^        "string": "c",$/;"	s	object:files.associations
+string_view	.vscode/settings.json	/^        "string_view": "c",$/;"	s	object:files.associations
 tag	src/common.c	/^    int tag;$/;"	m	struct:tagNames_t	typeref:typename:int	file:
 tag2string	src/common.c	/^const char *const tag2string(int tag) {$/;"	f	typeref:typename:const char * const
 tagNames	src/common.c	/^} tagNames[] = {$/;"	v	typeref:struct:tagNames_t[]
@@ -200,9 +213,9 @@ tagNames_t	src/common.c	/^struct tagNames_t {$/;"	s	file:
 tags	Makefile	/^tags: $(SOURCES_DWARF) $(SOURCES_MUSEUM) $(HEADERS_DWARF) $(HEADERS_MUSEUM)$/;"	t
 threadComm	src/dwarf/main.c	/^pthread_t threadComm;$/;"	v	typeref:typename:pthread_t
 threadComm	src/museum/main.c	/^pthread_t threadComm;$/;"	v	typeref:typename:pthread_t
-ts	src/common.h	/^    int ts;         \/\/ timestamp - Lamport clock$/;"	m	struct:__anon70586b7b0108	typeref:typename:int
-waitForJobAccess	src/common.h	/^    waitForJobAccess,$/;"	e	enum:__anon70586b7b0303
-waitForNewJob	src/common.h	/^    waitForNewJob,$/;"	e	enum:__anon70586b7b0303
-waitForPortal	src/common.h	/^    waitForPortal,$/;"	e	enum:__anon70586b7b0303
-waitForReserve	src/common.h	/^    waitForReserve,$/;"	e	enum:__anon70586b7b0303
+ts	src/common.h	/^    int ts;         \/\/ timestamp - Lamport clock$/;"	m	struct:__anon70586b7b0308	typeref:typename:int
+waitForJobAccess	src/common.h	/^    waitForJobAccess,$/;"	e	enum:__anon70586b7b0403
+waitForNewJob	src/common.h	/^    waitForNewJob,$/;"	e	enum:__anon70586b7b0403
+waitForPortal	src/common.h	/^    waitForPortal,$/;"	e	enum:__anon70586b7b0403
+waitForReserve	src/common.h	/^    waitForReserve,$/;"	e	enum:__anon70586b7b0403
 waitNewJobSem	src/dwarf/main.c	/^sem_t waitNewJobSem;$/;"	v	typeref:typename:sem_t
