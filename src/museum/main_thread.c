@@ -17,8 +17,8 @@ void mainLoop() {
                 packet_t packet;
 
                 packet.museum_id = rank;
-                packet.id = lamport_time + 69;
-                packet.request_ts = -1;
+                packet.id = lamport_time;
+                packet.request_ts = 0;
                 packet.ack_count = 0;
 
                 debug("Generated new job: %d", packet.id);

@@ -71,7 +71,7 @@ typedef enum {
     waitForNewJob,
     newJobArrived,
     waitForJobAccess,
-    onDuty,
+    jobAccessed,
     waitForPortal,
     inWork,
     inFinish

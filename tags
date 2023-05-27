@@ -115,7 +115,7 @@ MPI_PACKET_T	src/common.c	/^MPI_Datatype MPI_PACKET_T;$/;"	v	typeref:typename:MP
 MUSEUM_SRC_DIR	Makefile	/^MUSEUM_SRC_DIR = $(SOURCES_DIR)\/museum$/;"	m
 NEW_JOB	src/common.h	/^#define NEW_JOB /;"	d
 NITEMS	src/common.h	/^#define NITEMS /;"	d
-NO_OF_DWARVES	Makefile	/^NO_OF_DWARVES = 3$/;"	m
+NO_OF_DWARVES	Makefile	/^NO_OF_DWARVES = 2$/;"	m
 NO_OF_MUSEUMS	Makefile	/^NO_OF_MUSEUMS = 2$/;"	m
 Przydział fuchy do krasnala	description/algorithm.tex	/^    \\subsection{Przydział fuchy do krasnala}$/;"	u	section:Algorytm
 Przydział krasnala do portalu	description/algorithm.tex	/^    \\subsection{Przydział krasnala do portalu}$/;"	u	section:Algorytm
@@ -137,6 +137,7 @@ __anon70586b7b0108	src/common.h	/^typedef struct {$/;"	s
 __anon70586b7b0208	src/common.h	/^typedef struct {$/;"	s
 __anon70586b7b0308	src/common.h	/^typedef struct {$/;"	s
 __anon70586b7b0403	src/common.h	/^typedef enum {$/;"	g
+__anond59a2eb30108	src/dwarf/comm_thread.c	/^typedef struct {$/;"	s	file:
 ack_count	src/common.h	/^    int ack_count;   \/\/ number of acks for portal$/;"	m	struct:__anon70586b7b0208	typeref:typename:int
 ack_count	src/common.h	/^    int ack_count;  \/\/ number of acks for job$/;"	m	struct:__anon70586b7b0108	typeref:typename:int
 ack_count	src/common.h	/^    int ack_count;$/;"	m	struct:__anon70586b7b0308	typeref:typename:int
@@ -151,6 +152,8 @@ comm_thread.h	.vscode/settings.json	/^        "comm_thread.h": "c",$/;"	s	object
 data	src/queue.h	/^    void *data[MAX_SIZE];$/;"	m	struct:__anon1fbf87770108	typeref:typename:void * []
 debug	src/common.h	/^#define debug(/;"	d
 dequeue	src/queue.c	/^void *dequeue(Queue *queue) {$/;"	f	typeref:typename:void *
+dequeueAt	src/queue.c	/^void *dequeueAt(Queue *queue, int index) {$/;"	f	typeref:typename:void *
+dwarf_id	src/dwarf/comm_thread.c	/^    int dwarf_id;$/;"	m	struct:__anond59a2eb30108	typeref:typename:int	file:
 enqueue	src/queue.c	/^void enqueue(Queue *queue, void *item) {$/;"	f	typeref:typename:void
 files.associations	.vscode/settings.json	/^    "files.associations": {$/;"	o
 finalize	src/dwarf/main.c	/^void finalize() {$/;"	f	typeref:typename:void
@@ -166,8 +169,12 @@ initQueue	src/queue.c	/^void initQueue(Queue *queue) {$/;"	f	typeref:typename:vo
 init_packet_type	src/common.c	/^void init_packet_type() {$/;"	f	typeref:typename:void
 isEmpty	src/queue.c	/^int isEmpty(Queue *queue) {$/;"	f	typeref:typename:int
 isFull	src/queue.c	/^int isFull(Queue *queue) {$/;"	f	typeref:typename:int
+job	src/dwarf/comm_thread.c	/^    jobData *job;$/;"	m	struct:__anond59a2eb30108	typeref:typename:jobData *	file:
+jobAccessGranted	src/dwarf/main.c	/^sem_t jobAccessGranted;$/;"	v	typeref:typename:sem_t
+jobAccessed	src/common.h	/^    jobAccessed,$/;"	e	enum:__anon70586b7b0403
 jobData	src/common.h	/^} jobData;$/;"	t	typeref:struct:__anon70586b7b0108
 jobReserveMut	src/museum/main.c	/^sem_t jobReserveMut;$/;"	v	typeref:typename:sem_t
+jobs	src/dwarf/main.c	/^Queue jobs;$/;"	v	typeref:typename:Queue
 lamportMut	src/common.c	/^pthread_mutex_t lamportMut = PTHREAD_MUTEX_INITIALIZER;$/;"	v	typeref:typename:pthread_mutex_t
 lamport_time	src/common.c	/^int lamport_time = 0;$/;"	v	typeref:typename:int
 main	Makefile	/^main: $(SOURCES_DWARF) $(SOURCES_MUSEUM) $(HEADERS_DWARF) $(HEADERS_MUSEUM) Makefile$/;"	t
@@ -180,16 +187,14 @@ museum_id	src/common.h	/^    int museum_id;  \/\/ museum id$/;"	m	struct:__anon7
 museum_id	src/common.h	/^    int museum_id;$/;"	m	struct:__anon70586b7b0308	typeref:typename:int
 name	src/common.c	/^    const char *name;$/;"	m	struct:tagNames_t	typeref:typename:const char *	file:
 newJobArrived	src/common.h	/^    newJobArrived,$/;"	e	enum:__anon70586b7b0403
-newJobProcessed	src/dwarf/main.c	/^pthread_cond_t newJobProcessed = PTHREAD_COND_INITIALIZER;$/;"	v	typeref:typename:pthread_cond_t
-newJobReceived	src/dwarf/main.c	/^pthread_cond_t newJobReceived = PTHREAD_COND_INITIALIZER;$/;"	v	typeref:typename:pthread_cond_t
-onDuty	src/common.h	/^    onDuty,$/;"	e	enum:__anon70586b7b0403
 packet_t	src/common.h	/^} packet_t;$/;"	t	typeref:struct:__anon70586b7b0308
-packets	src/dwarf/main.c	/^Queue packets;$/;"	v	typeref:typename:Queue
 portalData	src/common.h	/^} portalData;$/;"	t	typeref:struct:__anon70586b7b0208
+portals	src/dwarf/main.c	/^Queue portals;$/;"	v	typeref:typename:Queue
 println	src/common.h	/^#define println(/;"	d
 queueJobsMut	src/dwarf/main.c	/^pthread_mutex_t queueJobsMut = PTHREAD_MUTEX_INITIALIZER;$/;"	v	typeref:typename:pthread_mutex_t
 rank	src/common.c	/^int rank;$/;"	v	typeref:typename:int
 rear	src/queue.h	/^    int rear;$/;"	m	struct:__anon1fbf87770108	typeref:typename:int
+request	src/dwarf/comm_thread.c	/^} request;$/;"	t	typeref:struct:__anond59a2eb30108	file:
 request_ts	src/common.h	/^    int request_ts;   \/\/ timestamp of portal request$/;"	m	struct:__anon70586b7b0208	typeref:typename:int
 request_ts	src/common.h	/^    int request_ts; \/\/ timestamp of job request$/;"	m	struct:__anon70586b7b0108	typeref:typename:int
 request_ts	src/common.h	/^    int request_ts;$/;"	m	struct:__anon70586b7b0308	typeref:typename:int
@@ -215,6 +220,7 @@ threadComm	src/dwarf/main.c	/^pthread_t threadComm;$/;"	v	typeref:typename:pthre
 threadComm	src/museum/main.c	/^pthread_t threadComm;$/;"	v	typeref:typename:pthread_t
 ts	src/common.h	/^    int ts;         \/\/ timestamp - Lamport clock$/;"	m	struct:__anon70586b7b0308	typeref:typename:int
 waitForJobAccess	src/common.h	/^    waitForJobAccess,$/;"	e	enum:__anon70586b7b0403
+waitForJobProcessed	src/dwarf/main.c	/^sem_t waitForJobProcessed;$/;"	v	typeref:typename:sem_t
 waitForNewJob	src/common.h	/^    waitForNewJob,$/;"	e	enum:__anon70586b7b0403
 waitForPortal	src/common.h	/^    waitForPortal,$/;"	e	enum:__anon70586b7b0403
 waitForReserve	src/common.h	/^    waitForReserve,$/;"	e	enum:__anon70586b7b0403

@@ -19,11 +19,12 @@ extern int lamport_time;
 extern pthread_t threadComm;
 extern pthread_mutex_t queueJobsMut;
 
-extern pthread_cond_t newJobReceived;
-extern pthread_cond_t newJobProcessed;
 
 extern sem_t waitNewJobSem;
-extern Queue packets;
+extern sem_t waitForJobProcessed;
+extern sem_t jobAccessGranted;
+extern Queue jobs;
+extern Queue portals;
 
 
 

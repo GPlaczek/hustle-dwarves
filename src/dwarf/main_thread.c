@@ -10,50 +10,64 @@ void mainLoop() {
     debug("Main thread start");
 
     while (state != inFinish) {
+        debug("MAIN STATE: %d", state);
+
         switch (state) {
             case waitForNewJob:
             {
                 println("wait for new job");
 
+                sem_wait(&waitNewJobSem);
                 pthread_mutex_lock(&queueJobsMut);
-                pthread_cond_wait(&newJobReceived, &queueJobsMut);
 
-                packet_t *pkt = (packet_t *) packets.data[packets.rear];
-                jobToReq = packets.rear;
+                jobData *job = (jobData *) jobs.data[jobs.rear];
+                jobToReq = jobs.rear;
+                debug("got new job: museum: %d id: %d, request ts: %d", job->museum_id, job->id, job->request_ts);
 
-
-                debug("got new job: src: %d ts: %d museum: %d id: %d", pkt->src, pkt->ts, pkt->museum_id, pkt->id);
-
-                pthread_cond_signal(&newJobProcessed);
                 pthread_mutex_unlock(&queueJobsMut);
 
                 changeState(newJobArrived);
-
                 break;
             }
             case newJobArrived:
             {
+                debug("New Job Arrived");
                 pthread_mutex_lock(&queueJobsMut);
-                packet_t *packet = (packet_t *) packets.data[jobToReq];
+                jobData *job = (jobData *) jobs.data[jobToReq];
+                job->request_ts = lamport_time;
 
-                packet_t *pkt = malloc(sizeof(packet_t));
-                pkt = packet;
 
-                pkt->request_ts = lamport_time;
+                packet_t *pkt = malloc(sizeof(packet_t));                
+                pkt->museum_id = job->museum_id;
+                pkt->id = job->id;
+                pkt->request_ts = job->request_ts;
+                pkt->ack_count = 0;
+                pthread_mutex_unlock(&queueJobsMut);
+                sem_post(&waitForJobProcessed);
 
                 println("request for new job museum: %d, request ts: %d, id: %d", pkt->museum_id, pkt->request_ts, pkt->id);
-                pthread_mutex_unlock(&queueJobsMut);
-
-
                 for (int i = 0; i < size; i++) {
-                    if (i != rank) {
-                        sendPacket(pkt, i, REQ_JOB);
-                    }
+                    sendPacket(pkt, i, REQ_JOB);
                 }
 
-                pthread_cond_signal(&newJobProcessed);
+                changeState(waitForJobAccess);
+                free(pkt);
+                break;
+            }
+            case waitForJobAccess:
+            {
+                debug("wait for job access");
 
-                changeState(waitForNewJob);
+                sem_wait(&jobAccessGranted);
+
+                changeState(jobAccessed);
+                break;
+            }
+
+            case jobAccessed:
+            {
+                debug("Job Accessed!");
+                changeState(inFinish);
                 break;
             }
             default:

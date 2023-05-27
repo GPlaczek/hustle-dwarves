@@ -8,12 +8,11 @@
 pthread_t threadComm;
 pthread_mutex_t queueJobsMut = PTHREAD_MUTEX_INITIALIZER;
 
-pthread_cond_t newJobReceived = PTHREAD_COND_INITIALIZER;
-pthread_cond_t newJobProcessed = PTHREAD_COND_INITIALIZER;
-
-
+sem_t jobAccessGranted;
 sem_t waitNewJobSem;
-Queue packets;
+sem_t waitForJobProcessed;
+Queue jobs;
+Queue portals;
 
 
 
@@ -25,7 +24,9 @@ int main(int argc, char **argv) {
     // MPI_Status status;
     int provided;
 
-    sem_init(&waitNewJobSem, 0, 1);
+    sem_init(&waitNewJobSem, 0, 0);
+    sem_init(&waitForJobProcessed, 0, 0);
+    sem_init(&jobAccessGranted, 0, 0);
 
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
     check_thread_support(provided);
@@ -33,7 +34,8 @@ int main(int argc, char **argv) {
     srand(rank);
 
     init_packet_type();
-    initQueue(&packets);
+    initQueue(&jobs);
+    initQueue(&portals);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 

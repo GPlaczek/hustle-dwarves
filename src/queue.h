@@ -15,5 +15,6 @@ int isFull(Queue *queue);
 int isEmpty(Queue *queue);
 void enqueue(Queue *queue, void *item);
 void *dequeue(Queue *queue);
+void *dequeueAt(Queue *queue, int index);
 
 #endif

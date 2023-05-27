@@ -69,7 +69,7 @@ void sendPacket(packet_t *pkt, int destination, int tag) {
     pkt->ts = lamport_time;
 
     MPI_Send(pkt, 1, MPI_PACKET_T, destination, tag, MPI_COMM_WORLD);
-    debug("Sending %s from %d to %d\n", tag2string(tag), rank, destination);
+    debug("Sending %s from %d to %d, rts: %d", tag2string(tag), rank, destination, pkt->request_ts);
 
     if (freepkt) {
         free(pkt);

@@ -23,10 +23,13 @@ void *startCommThread(void *ptr) {
                 sem_post(&jobReserveMut);
                 break;
             case NEW_JOB:
-                // debug("new job... doing nothing %d %d %d %d", packet.src, packet.ts, packet.museum_id, packet.id);
+                debug("new job... doing nothing");
                 break;
             case REQ_JOB:
                 debug("req job... doing nothing");
+                break;
+            case ACK_JOB:
+                debug("ack job... doing nothing");
                 break;
             default:
                 break;

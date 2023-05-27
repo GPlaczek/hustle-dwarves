@@ -45,3 +45,25 @@ void *dequeue(Queue *queue) {
 
     return item;
 }
+
+void *dequeueAt(Queue *queue, int index) {
+    void *item;
+
+    if (isEmpty(queue) || index < 0 || index > queue->rear) {
+        return NULL;
+    }
+
+    item = queue->data[index];
+    for (int i = index; i < queue->rear; i++) {
+        queue->data[i] = queue->data[i + 1];
+    }
+    queue->rear--;
+
+    if (queue->front > queue->rear) {
+        // Queue is empty after dequeuing at a specific index
+        queue->front = -1;
+        queue->rear = -1;
+    }
+
+    return item;
+}
