@@ -3,13 +3,7 @@
 #include "main_thread.h"
 
 
-// int rank, size;
-// int lamport_time = 0;
-
-
 sem_t jobReserveMut;
-
-
 pthread_t threadComm;
 
 void check_thread_support(int provided);

@@ -13,8 +13,8 @@ sem_t jobAccessGranted;
 sem_t waitNewJobSem;
 sem_t waitForJobProcessed;
 sem_t waitForPortalAccess;
-Queue jobs;
-Queue portals;
+List jobs;
+List portals;
 
 
 
@@ -37,8 +37,8 @@ int main(int argc, char **argv) {
     srand(rank);
 
     init_packet_type();
-    initQueue(&jobs);
-    initQueue(&portals);
+    initList(&jobs);
+    initList(&portals);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 

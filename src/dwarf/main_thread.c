@@ -18,8 +18,8 @@ void mainLoop() {
                 sem_wait(&waitNewJobSem);
                 pthread_mutex_lock(&queueJobsMut);
                 
-                if (jobs.rear > -1) {
-                    jobData *job = (jobData *) jobs.data[jobs.rear];
+                if (jobs.head != NULL) {
+                    jobData *job = (jobData *) jobs.tail->data;
                     debug("got new job: museum: %d id: %d, request ts: %d", job->museum_id, job->id, job->request_ts);
                 }
 
@@ -62,7 +62,7 @@ void mainLoop() {
                 portal_req->request_ts = pkt->request_ts;
                 portal_req->dwarf_id = rank;
 
-                enqueue(&portals, portal_req);
+                addNode(&portals, portal_req);
                 pthread_mutex_unlock(&queuePortalsMut);
 
                 for (int i = 0; i < size; i++) {

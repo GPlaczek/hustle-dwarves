@@ -1,12 +1,13 @@
 #include "main.h"
 #include "main_thread.h"
-#include "../queue.h"
+#include "../list.h"
 
 void mainLoop() {
     srandom(rank);
     
-    Queue packets;
-    initQueue(&packets);
+    List packets;
+
+    initList(&packets);
 
     debug("Main thread Museum start");
 
@@ -22,7 +23,7 @@ void mainLoop() {
                 packet.ack_count = 0;
 
                 debug("Generated new job: %d", packet.id);
-                enqueue(&packets, &packet);
+                addNode(&packets, &packet);
                 changeState(sendNewJob);
                 debug("New State: %d\n", state);
                 sleep(rand() % 2 + 1);
@@ -30,7 +31,7 @@ void mainLoop() {
             }
             case sendNewJob: 
             {
-                packet_t *packet = (packet_t *) packets.data[packets.front];
+                packet_t *packet = (packet_t *) packets.head->data;
 
                 packet_t *pkt = malloc(sizeof(packet_t));
                 pkt->id = packet->id;
@@ -51,13 +52,13 @@ void mainLoop() {
             }
             case waitForReserve:
             {
-                packet_t *pkt = (packet_t *) packets.data[packets.front];
+                packet_t *pkt = (packet_t *) packets.head->data;
 
                 debug("Wait for reserve: %d", pkt->id);
 
                 sem_wait(&jobReserveMut);
                 changeState(generateJob);
-                dequeue(&packets);
+                removeNode(&packets, pkt);
                 break;
             }
             default:

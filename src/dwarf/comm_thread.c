@@ -13,9 +13,9 @@ void *startCommThread(void *ptr) {
 
     packet_t packet = {0};
 
-    Queue requests;
+    List requests;
 
-    initQueue(&requests);
+    initList(&requests);
 
     debug("Comm thread Dwarf start");
 
@@ -41,7 +41,7 @@ void *startCommThread(void *ptr) {
                 job->request_ts = lamport_time;
                 job->ack_count = packet.ack_count;
 
-                enqueue(&jobs, job);
+                addNode(&jobs, job);
                 pthread_mutex_unlock(&queueJobsMut);
                 
                 // send job requests & add request to requests queue
@@ -60,8 +60,8 @@ void *startCommThread(void *ptr) {
 
                 request *req = malloc(sizeof(request));
                 req->dwarf_id = rank;
-                req->job = (jobData *) jobs.data[jobs.rear];
-                enqueue(&requests, req);
+                req->job = (jobData *) jobs.tail->data;
+                addNode(&requests, req);
                 
                 sem_post(&waitNewJobSem);
                 break;
@@ -83,7 +83,7 @@ void *startCommThread(void *ptr) {
                 req->job = _job;
 
                 debug("enqueue %d %d %d", req->dwarf_id, req->job->museum_id, req->job->id);
-                enqueue(&requests, req);
+                addNode(&requests, req);
 
                 int job_exists = 0;
 
@@ -95,16 +95,18 @@ void *startCommThread(void *ptr) {
 
                 pthread_mutex_lock(&queueJobsMut);
 
-                if (jobs.front < 0 || jobs.rear < 0) {
+                if (jobs.head == NULL) {
                     sendPacket(pkt, packet.src, ACK_JOB);
                     pthread_mutex_unlock(&queueJobsMut);
                     free(pkt);
                     break;
                 }
 
-                for (int i = jobs.front; i <= jobs.rear; i++) {
-                    jobData *job = (jobData *) jobs.data[i];
-                    
+                Node *current = jobs.head;
+
+                while (current != NULL) {
+                    jobData *job = (jobData *) current->data;
+
                     debug("%d %d | %d %d | %d %d", job->id, packet.id, job->museum_id, packet.museum_id, job->request_ts, packet.request_ts);
 
                     if (job->id == packet.id && 
@@ -115,6 +117,7 @@ void *startCommThread(void *ptr) {
                             break;
                         }
                     }
+                    current = current->next;
                 }
 
                 pthread_mutex_unlock(&queueJobsMut);
@@ -134,36 +137,43 @@ void *startCommThread(void *ptr) {
 
                 pthread_mutex_lock(&queueJobsMut);
 
-                if (jobs.front == -1 || jobs.rear == -1) {
+                if (jobs.head == NULL) {
                     break;
                 }
 
                 // increase ack count for this job
-                for (int i = jobs.front; i <= jobs.rear; i++) {
-                    jobData *local_job = (jobData *) jobs.data[i];
-                    if (local_job->museum_id == packet.museum_id &&
-                        local_job->id == packet.id) {
-                        local_job->ack_count++;
-                        debug("ack for job %d %d: %d", local_job->museum_id, local_job->id, local_job->ack_count);
+                Node *current = jobs.head;
+
+                while (current != NULL) {
+                    jobData *job = (jobData *) current->data;
+                    if (job->museum_id == packet.museum_id &&
+                        job->id == packet.id) {
+                        job->ack_count++;
+                        debug("ack for job %d %d: %d", job->museum_id, job->id, job->ack_count);
 
                         // on duty
-                        if (local_job->ack_count == DWARVES - 1) {
+                        if (job->ack_count == DWARVES - 1) {
                             debug("ON DUTY!");
                             on_duty = 1;
                             break;
                         }
                     }
+                    current = current->next;
                 }
 
-                for (int i = requests.front; i <= requests.rear; i++) {
-                    request *req = (request *) requests.data[i];
+                current = requests.head;
+                while (current != NULL) {
+                    request *req = (request *) current->data;
                     debug("REQ %d %d %d", req->dwarf_id, req->job->museum_id, req->job->id);
+
+                    current = current->next;
                 }
 
                 // distribute jobs
-                if (on_duty && requests.front > -1 && requests.rear > -1) {
-                    for (int j = jobs.front; j <= jobs.rear; j++) {
-                        jobData *job = (jobData *) jobs.data[j];
+                if (on_duty && requests.head != NULL) {
+                    Node *current_job = jobs.head;
+                    while (current_job != NULL) {
+                        jobData *job = (jobData *) current_job->data;
 
                         packet_t *pkt = malloc(sizeof(packet_t));
                         pkt->museum_id = job->museum_id;
@@ -174,8 +184,9 @@ void *startCommThread(void *ptr) {
                         int museumToDequeue = -1;
                         int jobToDequeue = -1;
 
-                        for (int i = requests.front; i <= requests.rear; i++) {
-                            request *req = (request *) requests.data[i];
+                        Node *current_request = requests.head;
+                        while (current_request != NULL) {
+                            request *req = (request *) current_request->data;
 
                             debug("REQ %d %d %d | %d %d", req->dwarf_id, req->job->museum_id, job->museum_id, req->job->id, job->id);
                             
@@ -184,6 +195,7 @@ void *startCommThread(void *ptr) {
                                 
                                 // send reserve to museum & dwarves
                                 // if dwarf is in waitForJobAccess state
+                                debug("state: %d", state);
                                 if (req->dwarf_id == rank &&
                                     state == waitForJobAccess) {
                                     for (int k = 0; k < size; k++) {
@@ -191,7 +203,7 @@ void *startCommThread(void *ptr) {
                                             sendPacket(pkt, k, RESERVE);
                                         }
                                     }
-                                    sem_post(&jobAccessGranted);
+                                    // sem_post(&jobAccessGranted);
                                 } else if (req->dwarf_id != rank) {
                                     debug("Send TAKE to %d", req->dwarf_id);
                                     // sendPacket(pkt, req->dwarf_id, TAKE);
@@ -200,24 +212,33 @@ void *startCommThread(void *ptr) {
                                 jobToDequeue = req->job->id;
                                 break;
                             }
+                            current_request = current_request->next;
                         }
 
-                        for (int i = requests.front; i <= requests.rear; i++) {
-                            request *req = (request *) requests.data[i];
+                        current_request = requests.head;
+                        while (current_request != NULL) {
+                            request *req = (request *) current_request->data;
                             if (museumToDequeue == req->job->museum_id &&
                                 jobToDequeue == req->job->id) {
                                 debug("dequeue %d %d %d", req->dwarf_id, req->job->museum_id, req->job->id);
-                                dequeueAt(&requests, i);
-                                free(req);
+                                removeNode(&requests, current_request);
                             }
+                            current_request = current_request->next;
                         }
+
+                        current = requests.head;
+                        while (current != NULL) {
+                            request *req = (request *) current->data;
+                            debug("REQ %d %d %d", req->dwarf_id, req->job->museum_id, req->job->id);
+
+                            current = current->next;
+                        }
+
                         free(pkt);
-                        
-                        dequeueAt(&jobs, j);
-                        free(job);
+                        removeNode(&jobs, current_job);
+                        current_job = current_job->next;
                     }
                 }
-
                 pthread_mutex_unlock(&queueJobsMut);
                 break;
             }
@@ -227,19 +248,22 @@ void *startCommThread(void *ptr) {
 
                 pthread_mutex_lock(&queueJobsMut);
 
-                if (jobs.front < 0 || jobs.rear < 0) {
+                if (jobs.head == NULL) {
                     break;
                 }
 
-                for (int i = jobs.front; i <= jobs.rear; i++) {
-                    jobData *job = (jobData *) jobs.data[i];
+                Node *current_job = jobs.head;
+                while (current_job != NULL) {
+                    jobData *job = (jobData *) current_job->data;
 
                     if (job->museum_id == packet.museum_id &&
                         job->id == packet.id) {
                         debug("Job taken: %d %d", job->museum_id, job->id);
-                        dequeueAt(&jobs, i);
+                        removeNode(&jobs, job);
                         break;
                     }
+
+                    current_job = current_job->next;
                 }
 
                 pthread_mutex_unlock(&queueJobsMut);
@@ -267,19 +291,21 @@ void *startCommThread(void *ptr) {
 
                 pthread_mutex_lock(&queueJobsMut);
 
-                if (jobs.front < 0 || jobs.rear < 0) {
+                if (jobs.head == NULL) {
                     break;
                 }
 
-                for (int i = jobs.front; i <= jobs.rear; i++) {
-                    jobData *job = (jobData *) jobs.data[i];
+                Node *current_job = jobs.head;
+                while (current_job != NULL) {
+                    jobData *job = (jobData *) current_job->data;
 
                     if (job->museum_id == packet.museum_id &&
                         job->id == packet.id) {
                         debug("Job reserved: %d %d", job->museum_id, job->id);
-                        dequeueAt(&jobs, i);
+                        removeNode(&jobs, job);
                         break;
                     }
+                    current_job = current_job->next;
                 }
 
                 pthread_mutex_unlock(&queueJobsMut);
@@ -296,7 +322,7 @@ void *startCommThread(void *ptr) {
                 pkt->ack_count = packet.ack_count;
                 pkt->request_ts = packet.request_ts;
 
-                if (portals.front < 0 || portals.rear < 0) {
+                if (portals.head == NULL) {
                     sendPacket(pkt, packet.src, ACK_PORTAL);
                     break;
                 }
@@ -305,8 +331,9 @@ void *startCommThread(void *ptr) {
 
                 pthread_mutex_lock(&queuePortalsMut);
 
-                for (int i = portals.front; i <= portals.rear; i++) {
-                    portalData *portal = (portalData *) portals.data[i];
+                Node *current_portal = portals.head;
+                while (current_portal != NULL) {
+                    portalData *portal = (portalData *) current_portal->data;
 
                     debug("%d %d | %d %d", portal->id, packet.id, portal->request_ts, packet.request_ts);
 
@@ -316,6 +343,7 @@ void *startCommThread(void *ptr) {
                             sendPacket(pkt, packet.src, ACK_PORTAL);
                         }
                     }
+                    current_portal = current_portal->next;
                 }
 
                 pthread_mutex_unlock(&queuePortalsMut);
@@ -337,8 +365,9 @@ void *startCommThread(void *ptr) {
                 pthread_mutex_lock(&queuePortalsMut);
                 
                 // increase ack count for this portal
-                for (int i = portals.front; i <= portals.rear; i++) {
-                    portalData *portal = (portalData *) portals.data[i];
+                Node *current_portal = portals.head;
+                while (current_portal != NULL) {
+                    portalData *portal = (portalData *) current_portal->data;
 
                     if (portal->id == packet.id) {
                         portal->ack_count++;
@@ -351,10 +380,12 @@ void *startCommThread(void *ptr) {
                         debug("PORTAL ACCESSED!");
                         portal_accessed = portal->id;
                         // sem_post(&waitForPortalAccess);
-                        dequeueAt(&portals, i);
+                        removeNode(&portals, current_portal);
                         free(portal);
                         break;
                     }
+
+                    current_portal = current_portal->next;
                 }
 
                 // if (portal_accessed != -1) {

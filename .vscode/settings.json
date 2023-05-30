@@ -5,6 +5,10 @@
         "array": "c",
         "string": "c",
         "string_view": "c",
-        "span": "c"
+        "span": "c",
+        "list.h": "c",
+        "deque": "c",
+        "list": "c",
+        "vector": "c"
     }
 }

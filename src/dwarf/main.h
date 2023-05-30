@@ -9,7 +9,7 @@
 
 
 #include "../common.h"
-#include "../queue.h"
+#include "../list.h"
 
 
 extern int rank;
@@ -25,8 +25,8 @@ extern sem_t waitNewJobSem;
 extern sem_t waitForJobProcessed;
 extern sem_t jobAccessGranted;
 extern sem_t waitForPortalAccess;
-extern Queue jobs;
-extern Queue portals;
+extern List jobs;
+extern List portals;
 
 
 
