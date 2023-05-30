@@ -19,9 +19,14 @@ void *startCommThread(void *ptr) {
 
         switch (status.MPI_TAG) {
             case RESERVE:
-                debug("job reserved");
-                sem_post(&jobReserveMut);
+            {
+                debug("job reserved dwarf: %d, museum_id: %d, job id: %d", packet.src, packet.museum_id, packet.id);
+                
+                if (packet.museum_id == rank) {
+                    sem_post(&jobReserveMut);
+                }
                 break;
+            }
             case NEW_JOB:
                 debug("new job... doing nothing");
                 break;
@@ -30,6 +35,12 @@ void *startCommThread(void *ptr) {
                 break;
             case ACK_JOB:
                 debug("ack job... doing nothing");
+                break;
+            case TAKE:
+                debug("take job... doing nothing");
+                break;
+            case REQ_PORTAL:
+                debug("req portal... doing nothing");
                 break;
             default:
                 break;

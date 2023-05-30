@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     // MPI_Status status;
     int provided;
 
-    sem_init(&jobReserveMut, 0, 1);
+    sem_init(&jobReserveMut, 0, 0);
 
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
     check_thread_support(provided);

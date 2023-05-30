@@ -116,7 +116,8 @@ MUSEUM_SRC_DIR	Makefile	/^MUSEUM_SRC_DIR = $(SOURCES_DIR)\/museum$/;"	m
 NEW_JOB	src/common.h	/^#define NEW_JOB /;"	d
 NITEMS	src/common.h	/^#define NITEMS /;"	d
 NO_OF_DWARVES	Makefile	/^NO_OF_DWARVES = 2$/;"	m
-NO_OF_MUSEUMS	Makefile	/^NO_OF_MUSEUMS = 2$/;"	m
+NO_OF_MUSEUMS	Makefile	/^NO_OF_MUSEUMS = 1$/;"	m
+NO_OF_PORTALS	Makefile	/^NO_OF_PORTALS = 1$/;"	m
 Przydział fuchy do krasnala	description/algorithm.tex	/^    \\subsection{Przydział fuchy do krasnala}$/;"	u	section:Algorytm
 Przydział krasnala do portalu	description/algorithm.tex	/^    \\subsection{Przydział krasnala do portalu}$/;"	u	section:Algorytm
 Pseudokod	description/algorithm.tex	/^    \\section{Pseudokod}$/;"	s
@@ -153,6 +154,7 @@ data	src/queue.h	/^    void *data[MAX_SIZE];$/;"	m	struct:__anon1fbf87770108	typ
 debug	src/common.h	/^#define debug(/;"	d
 dequeue	src/queue.c	/^void *dequeue(Queue *queue) {$/;"	f	typeref:typename:void *
 dequeueAt	src/queue.c	/^void *dequeueAt(Queue *queue, int index) {$/;"	f	typeref:typename:void *
+dwarf_id	src/common.h	/^    int dwarf_id;    \/\/ id of dwarf$/;"	m	struct:__anon70586b7b0208	typeref:typename:int
 dwarf_id	src/dwarf/comm_thread.c	/^    int dwarf_id;$/;"	m	struct:__anond59a2eb30108	typeref:typename:int	file:
 enqueue	src/queue.c	/^void enqueue(Queue *queue, void *item) {$/;"	f	typeref:typename:void
 files.associations	.vscode/settings.json	/^    "files.associations": {$/;"	o
@@ -192,6 +194,7 @@ portalData	src/common.h	/^} portalData;$/;"	t	typeref:struct:__anon70586b7b0208
 portals	src/dwarf/main.c	/^Queue portals;$/;"	v	typeref:typename:Queue
 println	src/common.h	/^#define println(/;"	d
 queueJobsMut	src/dwarf/main.c	/^pthread_mutex_t queueJobsMut = PTHREAD_MUTEX_INITIALIZER;$/;"	v	typeref:typename:pthread_mutex_t
+queuePortalsMut	src/dwarf/main.c	/^pthread_mutex_t queuePortalsMut = PTHREAD_MUTEX_INITIALIZER;$/;"	v	typeref:typename:pthread_mutex_t
 rank	src/common.c	/^int rank;$/;"	v	typeref:typename:int
 rear	src/queue.h	/^    int rear;$/;"	m	struct:__anon1fbf87770108	typeref:typename:int
 request	src/dwarf/comm_thread.c	/^} request;$/;"	t	typeref:struct:__anond59a2eb30108	file:
@@ -223,5 +226,6 @@ waitForJobAccess	src/common.h	/^    waitForJobAccess,$/;"	e	enum:__anon70586b7b0
 waitForJobProcessed	src/dwarf/main.c	/^sem_t waitForJobProcessed;$/;"	v	typeref:typename:sem_t
 waitForNewJob	src/common.h	/^    waitForNewJob,$/;"	e	enum:__anon70586b7b0403
 waitForPortal	src/common.h	/^    waitForPortal,$/;"	e	enum:__anon70586b7b0403
+waitForPortalAccess	src/dwarf/main.c	/^sem_t waitForPortalAccess;$/;"	v	typeref:typename:sem_t
 waitForReserve	src/common.h	/^    waitForReserve,$/;"	e	enum:__anon70586b7b0403
 waitNewJobSem	src/dwarf/main.c	/^sem_t waitNewJobSem;$/;"	v	typeref:typename:sem_t

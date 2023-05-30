@@ -39,6 +39,7 @@ typedef struct {
     int id;          // portal id
     int request_ts;   // timestamp of portal request
     int ack_count;   // number of acks for portal
+    int dwarf_id;    // id of dwarf
 } portalData;
 
 typedef struct {

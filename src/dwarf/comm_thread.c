@@ -27,23 +27,43 @@ void *startCommThread(void *ptr) {
         lamport_time = packet.ts > lamport_time ? packet.ts + 1 : lamport_time + 1;
         pthread_mutex_unlock(&lamportMut);
 
+
         switch (status.MPI_TAG) {
             case NEW_JOB:
             {
                 debug("new job src: %d ts: %d museum: %d id: %d", packet.src, packet.ts, packet.museum_id, packet.id);
                 
+                // add job to queue
                 pthread_mutex_lock(&queueJobsMut);
                 jobData *job = malloc(sizeof(jobData));
                 job->museum_id = packet.museum_id;
                 job->id = packet.id;
-                job->request_ts = 0;
+                job->request_ts = lamport_time;
                 job->ack_count = packet.ack_count;
 
                 enqueue(&jobs, job);
                 pthread_mutex_unlock(&queueJobsMut);
+                
+                // send job requests & add request to requests queue
+                packet_t *pkt = malloc(sizeof(packet_t));
+                pkt->museum_id = job->museum_id;
+                pkt->id = job->id;
+                pkt->request_ts = job->request_ts;
+                pkt->ack_count = 0;
+
+                for (int i = 0; i < size; i++) {
+                    if (i != rank) {
+                        sendPacket(pkt, i, REQ_JOB);
+                    }
+                }
+                free(pkt);
+
+                request *req = malloc(sizeof(request));
+                req->dwarf_id = rank;
+                req->job = (jobData *) jobs.data[jobs.rear];
+                enqueue(&requests, req);
+                
                 sem_post(&waitNewJobSem);
-                changeState(waitForNewJob);
-                // sem_wait(&waitForJobProcessed);
                 break;
             }
             case REQ_JOB:
@@ -62,19 +82,23 @@ void *startCommThread(void *ptr) {
 
                 req->job = _job;
 
-                debug("enqueue");
+                debug("enqueue %d %d %d", req->dwarf_id, req->job->museum_id, req->job->id);
                 enqueue(&requests, req);
 
-                if (packet.src == rank) {
-                    break;
-                }
-
                 int job_exists = 0;
+
+                packet_t *pkt = malloc(sizeof(packet_t));
+                pkt->ack_count = packet.ack_count;
+                pkt->id = packet.id;
+                pkt->museum_id = packet.museum_id;
+                pkt->request_ts = packet.request_ts;
 
                 pthread_mutex_lock(&queueJobsMut);
 
                 if (jobs.front < 0 || jobs.rear < 0) {
-                    sendPacket(&packet, packet.src, ACK_JOB);
+                    sendPacket(pkt, packet.src, ACK_JOB);
+                    pthread_mutex_unlock(&queueJobsMut);
+                    free(pkt);
                     break;
                 }
 
@@ -87,7 +111,7 @@ void *startCommThread(void *ptr) {
                         job->museum_id == packet.museum_id) {
                         job_exists = 1;
                         if (job->request_ts < packet.request_ts) {
-                            sendPacket(&packet, packet.src, ACK_JOB);
+                            sendPacket(pkt, packet.src, ACK_JOB);
                             break;
                         }
                     }
@@ -96,27 +120,23 @@ void *startCommThread(void *ptr) {
                 pthread_mutex_unlock(&queueJobsMut);
 
                 if (job_exists == 0) {
-                    sendPacket(&packet, packet.src, ACK_JOB);
+                    sendPacket(pkt, packet.src, ACK_JOB);
                 }
 
+                free(pkt);
                 break;
             }
             case ACK_JOB:
             {
-                debug("ack job arrived from: %d museum: %d id: %d", packet.src, packet.museum_id, packet.id);
-                
-                // dwarf can't send ack for itself
-                if (packet.src == rank) {
-                    break;
-                }
+                debug("ack job arrived from: %d museum: %d id: %d rts: %d", packet.src, packet.museum_id, packet.id, packet.request_ts);
+
+                int on_duty = 0;
 
                 pthread_mutex_lock(&queueJobsMut);
 
                 if (jobs.front == -1 || jobs.rear == -1) {
                     break;
                 }
-
-                int on_duty = 0;
 
                 // increase ack count for this job
                 for (int i = jobs.front; i <= jobs.rear; i++) {
@@ -135,6 +155,12 @@ void *startCommThread(void *ptr) {
                     }
                 }
 
+                for (int i = requests.front; i <= requests.rear; i++) {
+                    request *req = (request *) requests.data[i];
+                    debug("REQ %d %d %d", req->dwarf_id, req->job->museum_id, req->job->id);
+                }
+
+                // distribute jobs
                 if (on_duty && requests.front > -1 && requests.rear > -1) {
                     for (int j = jobs.front; j <= jobs.rear; j++) {
                         jobData *job = (jobData *) jobs.data[j];
@@ -145,7 +171,8 @@ void *startCommThread(void *ptr) {
                         pkt->request_ts = job->request_ts;
                         pkt->ack_count = job->ack_count;
 
-                        int job_taken = 0;
+                        int museumToDequeue = -1;
+                        int jobToDequeue = -1;
 
                         for (int i = requests.front; i <= requests.rear; i++) {
                             request *req = (request *) requests.data[i];
@@ -153,21 +180,41 @@ void *startCommThread(void *ptr) {
                             debug("REQ %d %d %d | %d %d", req->dwarf_id, req->job->museum_id, job->museum_id, req->job->id, job->id);
                             
                             if (req->job->museum_id == job->museum_id &&
-                                req->job->id == job->id &&
-                                !job_taken) {
+                                req->job->id == job->id) {
                                 
-                                // TODO: priorytetyzuje najpierw siebie
-                                debug("Send TAKE to %d", req->dwarf_id);
-                                sendPacket(pkt, req->dwarf_id, TAKE);
-                                job_taken = 1;
+                                // send reserve to museum & dwarves
+                                // if dwarf is in waitForJobAccess state
+                                if (req->dwarf_id == rank &&
+                                    state == waitForJobAccess) {
+                                    for (int k = 0; k < size; k++) {
+                                        if (k != rank) {
+                                            sendPacket(pkt, k, RESERVE);
+                                        }
+                                    }
+                                    sem_post(&jobAccessGranted);
+                                } else if (req->dwarf_id != rank) {
+                                    debug("Send TAKE to %d", req->dwarf_id);
+                                    // sendPacket(pkt, req->dwarf_id, TAKE);
+                                }
+                                museumToDequeue = req->job->museum_id;
+                                jobToDequeue = req->job->id;
+                                break;
                             }
+                        }
 
-                            if (job_taken) {
+                        for (int i = requests.front; i <= requests.rear; i++) {
+                            request *req = (request *) requests.data[i];
+                            if (museumToDequeue == req->job->museum_id &&
+                                jobToDequeue == req->job->id) {
+                                debug("dequeue %d %d %d", req->dwarf_id, req->job->museum_id, req->job->id);
                                 dequeueAt(&requests, i);
+                                free(req);
                             }
-                            free(req);
                         }
                         free(pkt);
+                        
+                        dequeueAt(&jobs, j);
+                        free(job);
                     }
                 }
 
@@ -180,20 +227,159 @@ void *startCommThread(void *ptr) {
 
                 pthread_mutex_lock(&queueJobsMut);
 
-                    for (int i = jobs.front; i <= jobs.rear; i++) {
-                        jobData *job = (jobData *) jobs.data[i];
+                if (jobs.front < 0 || jobs.rear < 0) {
+                    break;
+                }
 
-                        if (job->museum_id == packet.museum_id &&
-                            job->id == packet.id) {
-                            debug("Job taken: %d %d", job->museum_id, job->id);
-                            dequeueAt(&jobs, i);
-                            break;
-                        }
+                for (int i = jobs.front; i <= jobs.rear; i++) {
+                    jobData *job = (jobData *) jobs.data[i];
+
+                    if (job->museum_id == packet.museum_id &&
+                        job->id == packet.id) {
+                        debug("Job taken: %d %d", job->museum_id, job->id);
+                        dequeueAt(&jobs, i);
+                        break;
                     }
+                }
 
                 pthread_mutex_unlock(&queueJobsMut);
 
+                packet_t *pkt = malloc(sizeof(packet_t));
+                pkt->museum_id = packet.museum_id;
+                pkt->id = packet.id;
+                pkt->request_ts = packet.request_ts;
+                pkt->ack_count = packet.ack_count;
+
+                for (int i = 0; i < size; i++) {
+                    if (i != rank) {
+                        sendPacket(pkt, i, RESERVE);
+                    }
+                }
+
+                free(pkt);
+
                 sem_post(&jobAccessGranted);
+                break;
+            }
+            case RESERVE:
+            {
+                debug("reserve arrived from: %d museum: %d id: %d", packet.src, packet.museum_id, packet.id);
+
+                pthread_mutex_lock(&queueJobsMut);
+
+                if (jobs.front < 0 || jobs.rear < 0) {
+                    break;
+                }
+
+                for (int i = jobs.front; i <= jobs.rear; i++) {
+                    jobData *job = (jobData *) jobs.data[i];
+
+                    if (job->museum_id == packet.museum_id &&
+                        job->id == packet.id) {
+                        debug("Job reserved: %d %d", job->museum_id, job->id);
+                        dequeueAt(&jobs, i);
+                        break;
+                    }
+                }
+
+                pthread_mutex_unlock(&queueJobsMut);
+
+                break;
+            }
+            case REQ_PORTAL:
+            {
+                debug("portal request arrived from: %d portal id: %d rts: %d", packet.src, packet.id, packet.request_ts);
+                
+                packet_t *pkt = malloc(sizeof(packet_t));
+                pkt->id = packet.id;
+                pkt->museum_id = packet.museum_id;
+                pkt->ack_count = packet.ack_count;
+                pkt->request_ts = packet.request_ts;
+
+                if (portals.front < 0 || portals.rear < 0) {
+                    sendPacket(pkt, packet.src, ACK_PORTAL);
+                    break;
+                }
+
+                int portal_exists = 0;
+
+                pthread_mutex_lock(&queuePortalsMut);
+
+                for (int i = portals.front; i <= portals.rear; i++) {
+                    portalData *portal = (portalData *) portals.data[i];
+
+                    debug("%d %d | %d %d", portal->id, packet.id, portal->request_ts, packet.request_ts);
+
+                    if (portal->id == packet.id) {
+                        portal_exists = 1;
+                        if (portal->request_ts < packet.request_ts) {
+                            sendPacket(pkt, packet.src, ACK_PORTAL);
+                        }
+                    }
+                }
+
+                pthread_mutex_unlock(&queuePortalsMut);
+                
+                if (portal_exists == 0) {
+                    sendPacket(pkt, packet.src, ACK_PORTAL);
+                }
+
+                free(pkt);
+
+                break;
+            }
+            case ACK_PORTAL:
+            {   
+                debug("ack portal arrived from: %d, portal: %d", packet.src, packet.id);
+
+                int portal_accessed = -1;
+
+                pthread_mutex_lock(&queuePortalsMut);
+                
+                // increase ack count for this portal
+                for (int i = portals.front; i <= portals.rear; i++) {
+                    portalData *portal = (portalData *) portals.data[i];
+
+                    if (portal->id == packet.id) {
+                        portal->ack_count++;
+                    }
+
+                    debug("%d %d %d", portal->dwarf_id, rank, portal->ack_count)
+
+                    if (portal->dwarf_id == rank &&
+                        portal->ack_count == DWARVES - 1) {
+                        debug("PORTAL ACCESSED!");
+                        portal_accessed = portal->id;
+                        // sem_post(&waitForPortalAccess);
+                        dequeueAt(&portals, i);
+                        free(portal);
+                        break;
+                    }
+                }
+
+                // if (portal_accessed != -1) {
+                //     for (int i = portals.front; i <= portals.rear; i++) {
+                //         portalData *portal = (portalData *) portals.data[i];
+
+                //         if (portal->id == portal_accessed) {
+                //             packet_t *pkt = malloc(sizeof(packet_t));
+
+                //             pkt->ack_count = 0;
+                //             pkt->id = portal->id;
+                //             pkt->museum_id = -1;
+                //             pkt->request_ts = portal->request_ts;
+
+                //             sendPacket(pkt, portal->dwarf_id, ACK_PORTAL);
+
+                //             dequeueAt(&portals, i);
+                //             free(portal);
+                //             free(pkt);
+                //         }
+                //     }
+                // }
+
+                pthread_mutex_unlock(&queuePortalsMut);
+
                 break;
             }
             default:

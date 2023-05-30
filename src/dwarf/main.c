@@ -7,10 +7,12 @@
 
 pthread_t threadComm;
 pthread_mutex_t queueJobsMut = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t queuePortalsMut = PTHREAD_MUTEX_INITIALIZER;
 
 sem_t jobAccessGranted;
 sem_t waitNewJobSem;
 sem_t waitForJobProcessed;
+sem_t waitForPortalAccess;
 Queue jobs;
 Queue portals;
 
@@ -27,6 +29,7 @@ int main(int argc, char **argv) {
     sem_init(&waitNewJobSem, 0, 0);
     sem_init(&waitForJobProcessed, 0, 0);
     sem_init(&jobAccessGranted, 0, 0);
+    sem_init(&waitForPortalAccess, 0, 0);
 
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
     check_thread_support(provided);

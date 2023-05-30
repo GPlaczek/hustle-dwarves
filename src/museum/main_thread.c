@@ -33,7 +33,10 @@ void mainLoop() {
                 packet_t *packet = (packet_t *) packets.data[packets.front];
 
                 packet_t *pkt = malloc(sizeof(packet_t));
-                pkt = packet;
+                pkt->id = packet->id;
+                pkt->ack_count = packet->ack_count;
+                pkt->museum_id = packet->museum_id;
+                pkt->request_ts = packet->request_ts;
 
                 debug("new %d %d %d %d", pkt->museum_id, pkt->id, pkt->request_ts, pkt->ack_count);
 
@@ -42,7 +45,7 @@ void mainLoop() {
                         sendPacket(pkt, i, NEW_JOB);
                     }
                 }
-                sem_wait(&jobReserveMut);
+                free(pkt);
                 changeState(waitForReserve);
                 break;
             }

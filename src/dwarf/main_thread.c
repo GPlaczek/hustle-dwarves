@@ -5,8 +5,6 @@
 void mainLoop() {
     srandom(rank);
 
-    int jobToReq = -1;
-
     debug("Main thread start");
 
     while (state != inFinish) {
@@ -19,39 +17,15 @@ void mainLoop() {
 
                 sem_wait(&waitNewJobSem);
                 pthread_mutex_lock(&queueJobsMut);
-
-                jobData *job = (jobData *) jobs.data[jobs.rear];
-                jobToReq = jobs.rear;
-                debug("got new job: museum: %d id: %d, request ts: %d", job->museum_id, job->id, job->request_ts);
-
-                pthread_mutex_unlock(&queueJobsMut);
-
-                changeState(newJobArrived);
-                break;
-            }
-            case newJobArrived:
-            {
-                debug("New Job Arrived");
-                pthread_mutex_lock(&queueJobsMut);
-                jobData *job = (jobData *) jobs.data[jobToReq];
-                job->request_ts = lamport_time;
-
-
-                packet_t *pkt = malloc(sizeof(packet_t));                
-                pkt->museum_id = job->museum_id;
-                pkt->id = job->id;
-                pkt->request_ts = job->request_ts;
-                pkt->ack_count = 0;
-                pthread_mutex_unlock(&queueJobsMut);
-                sem_post(&waitForJobProcessed);
-
-                println("request for new job museum: %d, request ts: %d, id: %d", pkt->museum_id, pkt->request_ts, pkt->id);
-                for (int i = 0; i < size; i++) {
-                    sendPacket(pkt, i, REQ_JOB);
+                
+                if (jobs.rear > -1) {
+                    jobData *job = (jobData *) jobs.data[jobs.rear];
+                    debug("got new job: museum: %d id: %d, request ts: %d", job->museum_id, job->id, job->request_ts);
                 }
 
+                pthread_mutex_unlock(&queueJobsMut);
+
                 changeState(waitForJobAccess);
-                free(pkt);
                 break;
             }
             case waitForJobAccess:
@@ -67,7 +41,49 @@ void mainLoop() {
             case jobAccessed:
             {
                 debug("Job Accessed!");
-                changeState(inFinish);
+                changeState(waitForPortal);
+                break;
+            }
+            case waitForPortal:
+            {
+                debug("wait for portal");
+
+                packet_t *pkt = malloc(sizeof(packet_t));
+                pkt->ack_count = 0;
+                pkt->id = rand() % PORTALS;
+                pkt->museum_id = -1;
+                pkt->request_ts = lamport_time;
+
+                pthread_mutex_lock(&queuePortalsMut);
+
+                portalData *portal_req = malloc(sizeof(portalData));
+                portal_req->ack_count = 0;
+                portal_req->id = pkt->id;
+                portal_req->request_ts = pkt->request_ts;
+                portal_req->dwarf_id = rank;
+
+                enqueue(&portals, portal_req);
+                pthread_mutex_unlock(&queuePortalsMut);
+
+                for (int i = 0; i < size; i++) {
+                    if (i != rank) {
+                        sendPacket(pkt, i, REQ_PORTAL);
+                    }
+                }
+
+                free(pkt);
+
+                sem_wait(&waitForPortalAccess);
+
+                changeState(inWork);
+
+                break;
+            }
+            case inWork:
+            {
+                debug("WORKING...");
+                sleep(rand() % 5 + 1);
+                changeState(waitForNewJob);
                 break;
             }
             default:
