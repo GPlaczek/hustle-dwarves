@@ -135,11 +135,11 @@ SOURCES_MUSEUM	Makefile	/^SOURCES_MUSEUM = $(SOURCES) $(wildcard $(MUSEUM_SRC_DI
 TAKE	src/common.h	/^#define TAKE /;"	d
 TRUE	src/common.h	/^#define TRUE /;"	d
 The problem	README.md	/^# The problem$/;"	c
+__anon39dc729a0108	src/dwarf/main.h	/^typedef struct {$/;"	s
 __anon70586b7b0108	src/common.h	/^typedef struct {$/;"	s
 __anon70586b7b0208	src/common.h	/^typedef struct {$/;"	s
 __anon70586b7b0308	src/common.h	/^typedef struct {$/;"	s
 __anon70586b7b0403	src/common.h	/^typedef enum {$/;"	g
-__anond59a2eb30108	src/dwarf/comm_thread.c	/^typedef struct {$/;"	s	file:
 ack_count	src/common.h	/^    int ack_count;   \/\/ number of acks for portal$/;"	m	struct:__anon70586b7b0208	typeref:typename:int
 ack_count	src/common.h	/^    int ack_count;  \/\/ number of acks for job$/;"	m	struct:__anon70586b7b0108	typeref:typename:int
 ack_count	src/common.h	/^    int ack_count;$/;"	m	struct:__anon70586b7b0308	typeref:typename:int
@@ -157,7 +157,7 @@ data	src/list.h	/^    void *data;$/;"	m	struct:Node	typeref:typename:void *
 debug	src/common.h	/^#define debug(/;"	d
 deque	.vscode/settings.json	/^        "deque": "c",$/;"	s	object:files.associations
 dwarf_id	src/common.h	/^    int dwarf_id;    \/\/ id of dwarf$/;"	m	struct:__anon70586b7b0208	typeref:typename:int
-dwarf_id	src/dwarf/comm_thread.c	/^    int dwarf_id;$/;"	m	struct:__anond59a2eb30108	typeref:typename:int	file:
+dwarf_id	src/dwarf/main.h	/^    int dwarf_id;$/;"	m	struct:__anon39dc729a0108	typeref:typename:int
 files.associations	.vscode/settings.json	/^    "files.associations": {$/;"	o
 finalize	src/dwarf/main.c	/^void finalize() {$/;"	f	typeref:typename:void
 finalize	src/museum/main.c	/^void finalize() {$/;"	f	typeref:typename:void
@@ -171,12 +171,14 @@ inFinish	src/common.h	/^    inFinish$/;"	e	enum:__anon70586b7b0403
 inWork	src/common.h	/^    inWork,$/;"	e	enum:__anon70586b7b0403
 initList	src/list.c	/^void initList(List *list) {$/;"	f	typeref:typename:void
 init_packet_type	src/common.c	/^void init_packet_type() {$/;"	f	typeref:typename:void
-job	src/dwarf/comm_thread.c	/^    jobData *job;$/;"	m	struct:__anond59a2eb30108	typeref:typename:jobData *	file:
+job	src/dwarf/main.h	/^    jobData *job;$/;"	m	struct:__anon39dc729a0108	typeref:typename:jobData *
 jobAccessGranted	src/dwarf/main.c	/^sem_t jobAccessGranted;$/;"	v	typeref:typename:sem_t
 jobAccessed	src/common.h	/^    jobAccessed,$/;"	e	enum:__anon70586b7b0403
 jobData	src/common.h	/^} jobData;$/;"	t	typeref:struct:__anon70586b7b0108
 jobReserveMut	src/museum/main.c	/^sem_t jobReserveMut;$/;"	v	typeref:typename:sem_t
 jobs	src/dwarf/main.c	/^List jobs;$/;"	v	typeref:typename:List
+jobsRequestsMut	src/dwarf/main.c	/^pthread_mutex_t jobsRequestsMut = PTHREAD_MUTEX_INITIALIZER;$/;"	v	typeref:typename:pthread_mutex_t
+jobs_requests	src/dwarf/main.c	/^List jobs_requests;$/;"	v	typeref:typename:List
 lamportMut	src/common.c	/^pthread_mutex_t lamportMut = PTHREAD_MUTEX_INITIALIZER;$/;"	v	typeref:typename:pthread_mutex_t
 lamport_time	src/common.c	/^int lamport_time = 0;$/;"	v	typeref:typename:int
 list	.vscode/settings.json	/^        "list": "c",$/;"	s	object:files.associations
@@ -194,13 +196,15 @@ newJobArrived	src/common.h	/^    newJobArrived,$/;"	e	enum:__anon70586b7b0403
 next	src/list.h	/^    struct Node *next;$/;"	m	struct:Node	typeref:struct:Node *
 packet_t	src/common.h	/^} packet_t;$/;"	t	typeref:struct:__anon70586b7b0308
 portalData	src/common.h	/^} portalData;$/;"	t	typeref:struct:__anon70586b7b0208
-portals	src/dwarf/main.c	/^List portals;$/;"	v	typeref:typename:List
+portal_ack	src/dwarf/main.c	/^int portal_ack = 0;$/;"	v	typeref:typename:int
+portalsAckMut	src/dwarf/main.c	/^pthread_mutex_t portalsAckMut = PTHREAD_MUTEX_INITIALIZER;$/;"	v	typeref:typename:pthread_mutex_t
+portalsRequestsMut	src/dwarf/main.c	/^pthread_mutex_t portalsRequestsMut = PTHREAD_MUTEX_INITIALIZER;$/;"	v	typeref:typename:pthread_mutex_t
+portals_requests	src/dwarf/main.c	/^List portals_requests;$/;"	v	typeref:typename:List
 println	src/common.h	/^#define println(/;"	d
 queueJobsMut	src/dwarf/main.c	/^pthread_mutex_t queueJobsMut = PTHREAD_MUTEX_INITIALIZER;$/;"	v	typeref:typename:pthread_mutex_t
-queuePortalsMut	src/dwarf/main.c	/^pthread_mutex_t queuePortalsMut = PTHREAD_MUTEX_INITIALIZER;$/;"	v	typeref:typename:pthread_mutex_t
 rank	src/common.c	/^int rank;$/;"	v	typeref:typename:int
 removeNode	src/list.c	/^void removeNode(List *list, void *data) {$/;"	f	typeref:typename:void
-request	src/dwarf/comm_thread.c	/^} request;$/;"	t	typeref:struct:__anond59a2eb30108	file:
+request	src/dwarf/main.h	/^} request;$/;"	t	typeref:struct:__anon39dc729a0108
 request_ts	src/common.h	/^    int request_ts;   \/\/ timestamp of portal request$/;"	m	struct:__anon70586b7b0208	typeref:typename:int
 request_ts	src/common.h	/^    int request_ts; \/\/ timestamp of job request$/;"	m	struct:__anon70586b7b0108	typeref:typename:int
 request_ts	src/common.h	/^    int request_ts;$/;"	m	struct:__anon70586b7b0308	typeref:typename:int

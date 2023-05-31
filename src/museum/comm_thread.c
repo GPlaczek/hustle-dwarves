@@ -28,19 +28,19 @@ void *startCommThread(void *ptr) {
                 break;
             }
             case NEW_JOB:
-                debug("new job... doing nothing");
+                // debug("new job... doing nothing");
                 break;
             case REQ_JOB:
-                debug("req job... doing nothing");
+                // debug("req job... doing nothing");
                 break;
             case ACK_JOB:
-                debug("ack job... doing nothing");
+                // debug("ack job... doing nothing");
                 break;
             case TAKE:
-                debug("take job... doing nothing");
+                // debug("take job... doing nothing");
                 break;
             case REQ_PORTAL:
-                debug("req portal... doing nothing");
+                // debug("req portal... doing nothing");
                 break;
             default:
                 break;

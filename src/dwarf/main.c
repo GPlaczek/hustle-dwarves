@@ -5,17 +5,23 @@
 // int rank, size;
 // int lamport_time = 0;
 
+int portal_ack = 0;
+
 pthread_t threadComm;
 pthread_mutex_t queueJobsMut = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t queuePortalsMut = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t portalsAckMut = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t jobsRequestsMut = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t portalsRequestsMut = PTHREAD_MUTEX_INITIALIZER;
+
+sem_t waitNewJobSem;
 
 sem_t jobAccessGranted;
-sem_t waitNewJobSem;
 sem_t waitForJobProcessed;
 sem_t waitForPortalAccess;
-List jobs;
-List portals;
 
+List jobs;
+List jobs_requests;
+List portals_requests;
 
 
 void check_thread_support(int provided);
@@ -38,7 +44,8 @@ int main(int argc, char **argv) {
 
     init_packet_type();
     initList(&jobs);
-    initList(&portals);
+    initList(&jobs_requests);
+    initList(&portals_requests);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 

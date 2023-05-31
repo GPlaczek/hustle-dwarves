@@ -25,7 +25,7 @@ void mainLoop() {
                 debug("Generated new job: %d", packet.id);
                 addNode(&packets, &packet);
                 changeState(sendNewJob);
-                debug("New State: %d\n", state);
+                // debug("New State: %d\n", state);
                 sleep(rand() % 2 + 1);
                 break;
             }
@@ -39,7 +39,7 @@ void mainLoop() {
                 pkt->museum_id = packet->museum_id;
                 pkt->request_ts = packet->request_ts;
 
-                debug("new %d %d %d %d", pkt->museum_id, pkt->id, pkt->request_ts, pkt->ack_count);
+                // debug("new %d %d %d %d", pkt->museum_id, pkt->id, pkt->request_ts, pkt->ack_count);
 
                 for (int i = 0; i < size; i++) {
                     if (i != rank) {

@@ -4,7 +4,7 @@
 
 
 Node *createNode(void *data) {
-    Node *newNode = (Node *)malloc(sizeof(Node));
+    Node *newNode = (Node *) malloc(sizeof(Node));
     newNode->data = data;
     newNode->next = NULL;
     return newNode;
