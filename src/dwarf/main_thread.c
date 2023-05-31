@@ -19,6 +19,7 @@ void mainLoop() {
                 pthread_mutex_lock(&portalsRequestsMut);
                 Node *current_portal = portals_requests.head;
                 while (current_portal != NULL) {
+                    Node *next_request = current_portal->next;
                     portalData *portal = (portalData *) current_portal->data;
 
                     packet_t *pkt = malloc(sizeof(packet_t));
@@ -27,14 +28,12 @@ void mainLoop() {
                     pkt->request_ts = lamport_time;
                     pkt->ack_count = 0;
 
-                    for (int i = 0; i < size; i++) {
-                        if (i != rank) {
-                            sendPacket(pkt, i, ACK_PORTAL);
-                        }
-                    }
+                    debug("CHUJ");
+                    sendPacket(pkt, portal->dwarf_id, ACK_PORTAL);
                     free(pkt);
+                    removeNode(&portals_requests, portal);
 
-                    current_portal = current_portal->next;
+                    current_portal = next_request;
                 }
                 pthread_mutex_unlock(&portalsRequestsMut);
 
