@@ -354,7 +354,8 @@ void *startCommThread(void *ptr) {
                 pkt->request_ts = packet.request_ts;
 
                 // dwarf is not working - send ack
-                if (state != inWork) {
+                debug("STATE: %d", state);
+                if (state != inWork && state != waitForPortal) {
                     sendPacket(pkt, packet.src, ACK_PORTAL);
                     break;
                 }

@@ -127,6 +127,10 @@ void mainLoop() {
             }
             case inWork:
             {
+                pthread_mutex_lock(&portalsAckMut);
+                portal_ack = 0;
+                pthread_mutex_unlock(&portalsAckMut);
+
                 debug("WORKING...");
                 sleep(rand() % 20 + 10);
                 changeState(waitForNewJob);
