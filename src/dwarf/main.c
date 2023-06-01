@@ -7,6 +7,9 @@
 
 int portal_ack = 0;
 
+// snapshot of req_lamport from the moment a dwarf starts looking for a job
+int req_lamport = 0;
+
 pthread_t threadComm;
 pthread_mutex_t queueJobsMut = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t portalsAckMut = PTHREAD_MUTEX_INITIALIZER;
