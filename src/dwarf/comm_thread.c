@@ -150,11 +150,6 @@ void *startCommThread(void *ptr) {
                 int on_duty = 0;
 
                 pthread_mutex_lock(&queueJobsMut);
-
-                if (jobs.head == NULL) {
-                    break;
-                }
-
                 // increase ack count for this job
                 Node *current = jobs.head;
 
@@ -176,13 +171,15 @@ void *startCommThread(void *ptr) {
                 }
 
                 pthread_mutex_lock(&jobsRequestsMut);
-                current = jobs_requests.head;
-                while (current != NULL) {
-                    request *req = (request *) current->data;
-                    debug("REQ %d %d %d", req->dwarf_id, req->job->museum_id, req->job->id);
+                // current = jobs_requests.head;
+                // while (current != NULL) {
+                //     request *req = (request *) current->data;
+                //     debug("REQ %d %d %d", req->dwarf_id, req->job->museum_id, req->job->id);
 
-                    current = current->next;
-                }
+                //     current = current->next;
+                // }
+
+                int reserved = 0;
 
                 // distribute jobs
                 if (on_duty && jobs_requests.head != NULL) {
@@ -204,19 +201,23 @@ void *startCommThread(void *ptr) {
                         while (current_request != NULL) {
                             request *req = (request *) current_request->data;
                             current_request = current_request->next;
-                            // debug("REQ %d %d %d | %d %d", req->dwarf_id, req->job->museum_id, job->museum_id, req->job->id, job->id);
+                            debug("REQ %d %d %d | %d %d", req->dwarf_id, req->job->museum_id, job->museum_id, req->job->id, job->id);
                             
                             if (req->job->museum_id == job->museum_id &&
                                 req->job->id == job->id) {
                                 // send reserve to museum & dwarves
                                 // if dwarf is in waitForJobAccess state
                                 if (req->dwarf_id == rank) {
-                                    if (state == waitForJobAccess || state == waitForNewJob) {
+                                    debug("STATE: %d", state);
+                                    if ((state == waitForJobAccess || state == waitForNewJob) &&
+                                        reserved == 0) {
+                                        debug("Send RESERVE");
                                         for (int k = 0; k < size; k++) {
                                             if (k != rank) {
                                                 sendPacket(pkt, k, RESERVE);
                                             }
                                         }
+                                        reserved = 1;
                                         sem_post(&jobAccessGranted);
                                     } else {
                                         continue;
@@ -238,7 +239,7 @@ void *startCommThread(void *ptr) {
                             if (req != NULL && req->job != NULL) {
                                 if (museumToDequeue == req->job->museum_id &&
                                     jobToDequeue == req->job->id) {
-                                    debug("dequeue %d %d %d", req->dwarf_id, req->job->museum_id, req->job->id);
+                                    // debug("dequeue %d %d %d", req->dwarf_id, req->job->museum_id, req->job->id);
                                     removeNode(&jobs_requests, req);
                                 }
                             }
@@ -302,10 +303,6 @@ void *startCommThread(void *ptr) {
                 debug("reserve arrived from: %d museum: %d id: %d", packet.src, packet.museum_id, packet.id);
 
                 pthread_mutex_lock(&queueJobsMut);
-
-                if (jobs.head == NULL) {
-                    break;
-                }
                 
                 // remove reserved job from jobs
                 Node *current_job = jobs.head;
@@ -333,7 +330,7 @@ void *startCommThread(void *ptr) {
                     if (req != NULL && req->job != NULL) {
                         if (packet.museum_id == req->job->museum_id &&
                             packet.id == req->job->id) {
-                            // debug("dequeue %d %d %d", req->dwarf_id, req->job->museum_id, req->job->id);
+                            debug("dequeue %d %d %d", req->dwarf_id, req->job->museum_id, req->job->id);
                             removeNode(&jobs_requests, req);
                         }
                     }
@@ -354,7 +351,6 @@ void *startCommThread(void *ptr) {
                 pkt->request_ts = packet.request_ts;
 
                 // dwarf is not working - send ack
-                debug("STATE: %d", state);
                 if (state != inWork && state != waitForPortal) {
                     sendPacket(pkt, packet.src, ACK_PORTAL);
                     break;

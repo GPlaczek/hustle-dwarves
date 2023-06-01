@@ -118,8 +118,8 @@ MUSEUM_SRC_DIR	Makefile	/^MUSEUM_SRC_DIR = $(SOURCES_DIR)\/museum$/;"	m
 NEW_JOB	src/common.h	/^#define NEW_JOB /;"	d
 NITEMS	src/common.h	/^#define NITEMS /;"	d
 NO_OF_DWARVES	Makefile	/^NO_OF_DWARVES = 2$/;"	m
-NO_OF_MUSEUMS	Makefile	/^NO_OF_MUSEUMS = 1$/;"	m
-NO_OF_PORTALS	Makefile	/^NO_OF_PORTALS = 1$/;"	m
+NO_OF_MUSEUMS	Makefile	/^NO_OF_MUSEUMS = 2$/;"	m
+NO_OF_PORTALS	Makefile	/^NO_OF_PORTALS = 2$/;"	m
 Node	src/list.h	/^typedef struct Node {$/;"	s
 Node	src/list.h	/^} Node;$/;"	t	typeref:struct:Node
 Przydział fuchy do krasnala	description/algorithm.tex	/^    \\subsection{Przydział fuchy do krasnala}$/;"	u	section:Algorytm

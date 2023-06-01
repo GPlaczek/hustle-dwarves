@@ -8,7 +8,7 @@ void mainLoop() {
     debug("Main thread start");
 
     while (state != inFinish) {
-        debug("MAIN STATE: %d", state);
+        // debug("MAIN STATE: %d", state);
 
         switch (state) {
             case waitForNewJob:
@@ -28,7 +28,6 @@ void mainLoop() {
                     pkt->request_ts = lamport_time;
                     pkt->ack_count = 0;
 
-                    debug("CHUJ");
                     sendPacket(pkt, portal->dwarf_id, ACK_PORTAL);
                     free(pkt);
                     removeNode(&portals_requests, portal);
@@ -102,7 +101,7 @@ void mainLoop() {
                 pthread_mutex_unlock(&portalsAckMut);
 
                 // there is always a free portal
-                if (DWARVES == PORTALS) {
+                if (DWARVES >= PORTALS) {
                     changeState(inWork);
                     break;
                 }
@@ -131,7 +130,7 @@ void mainLoop() {
                 portal_ack = 0;
                 pthread_mutex_unlock(&portalsAckMut);
 
-                debug("WORKING...");
+                debug("\t\t\t\t\t\t\t\t\tWORKING...");
                 sleep(rand() % 20 + 10);
                 changeState(waitForNewJob);
                 debug("END WORKING");
