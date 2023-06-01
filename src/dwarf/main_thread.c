@@ -22,14 +22,13 @@ void mainLoop() {
                     Node *next_request = current_portal->next;
                     portalData *portal = (portalData *) current_portal->data;
 
-                    packet_t *pkt = malloc(sizeof(packet_t));
-                    pkt->museum_id = -1;
-                    pkt->id = portal->id;
-                    pkt->request_ts = lamport_time;
-                    pkt->ack_count = 0;
+                    packet_t pkt;
+                    pkt.museum_id = -1;
+                    pkt.id = portal->id;
+                    pkt.request_ts = lamport_time;
+                    pkt.ack_count = 0;
 
-                    sendPacket(pkt, portal->dwarf_id, ACK_PORTAL);
-                    free(pkt);
+                    sendPacket(&pkt, portal->dwarf_id, ACK_PORTAL);
                     removeNode(&portals_requests, portal);
 
                     current_portal = next_request;
@@ -50,18 +49,17 @@ void mainLoop() {
                 while (current_job != NULL) {
                     jobData *job = (jobData *) current_job->data;
 
-                    packet_t *pkt = malloc(sizeof(packet_t));
-                    pkt->museum_id = job->museum_id;
-                    pkt->id = job->id;
-                    pkt->request_ts = lamport_time;
-                    pkt->ack_count = 0;
+                    packet_t pkt;
+                    pkt.museum_id = job->museum_id;
+                    pkt.id = job->id;
+                    pkt.request_ts = lamport_time;
+                    pkt.ack_count = 0;
 
                     for (int i = 0; i < size; i++) {
                         if (i != rank) {
-                            sendPacket(pkt, i, REQ_JOB);
+                            sendPacket(&pkt, i, REQ_JOB);
                         }
                     }
-                    free(pkt);
                     // job_requested = 1;
 
                     request *req = malloc(sizeof(request));
@@ -113,19 +111,18 @@ void mainLoop() {
                 }
 
                 // send portal requests
-                packet_t *pkt = malloc(sizeof(packet_t));
-                pkt->ack_count = 0;
-                pkt->id = 0;
-                pkt->museum_id = -1;
-                pkt->request_ts = lamport_time;
+                packet_t pkt;
+                pkt.ack_count = 0;
+                pkt.id = 0;
+                pkt.museum_id = -1;
+                pkt.request_ts = lamport_time;
                 
                 for (int i = 0; i < size; i++) {
                     if (i != rank) {
-                        sendPacket(pkt, i, REQ_PORTAL);
+                        sendPacket(&pkt, i, REQ_PORTAL);
                     }
                 }
 
-                free(pkt);
                 sem_wait(&waitForPortalAccess);
                 changeState(inWork);
                 break;
