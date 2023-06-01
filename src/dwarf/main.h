@@ -19,6 +19,7 @@ typedef struct {
 
 extern int rank;
 extern int size;
+extern int req_lamport;
 extern int lamport_time;
 extern int portal_ack;
 
@@ -38,6 +39,5 @@ extern sem_t waitForPortalAccess;
 extern List jobs;
 extern List jobs_requests;
 extern List portals_requests;
-
 
 #endif

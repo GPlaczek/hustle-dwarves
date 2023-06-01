@@ -16,9 +16,6 @@ extern int rank;
 extern int size;
 extern int lamport_time;
 
-
-
-
 #ifdef DEBUG
 #define debug(FORMAT,...) printf("%c[%d;%dm [ts: %d] [" TAG " %d] [state: %d] " FORMAT "%c[%d;%dm\n",  27, (1+(rank/7))%2, 31+(6+rank)%7, lamport_time, rank, state, ##__VA_ARGS__, 27,0,37);
 #else

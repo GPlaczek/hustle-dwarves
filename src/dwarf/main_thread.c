@@ -46,13 +46,16 @@ void mainLoop() {
 
                 pthread_mutex_lock(&queueJobsMut);
                 Node *current_job = jobs.head;
+                req_lamport = lamport_time;
                 while (current_job != NULL) {
                     jobData *job = (jobData *) current_job->data;
+
+                    job->request_ts = req_lamport;
 
                     packet_t pkt;
                     pkt.museum_id = job->museum_id;
                     pkt.id = job->id;
-                    pkt.request_ts = lamport_time;
+                    pkt.request_ts = req_lamport;
                     pkt.ack_count = 0;
 
                     for (int i = 0; i < size; i++) {
