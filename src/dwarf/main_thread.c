@@ -137,7 +137,7 @@ void mainLoop() {
                 pthread_mutex_unlock(&portalsAckMut);
 
                 debug("\t\t\t\t\t\t\t\t\tWORKING...");
-                sleep(rand() % 20 + 10);
+                sleep(rand() % 3 + 2);
                 changeState(waitForNewJob);
                 debug("END WORKING");
                 break;
