@@ -98,19 +98,18 @@ void *startCommThread(void *ptr) {
 
                 int job_exists = 0;
 
-                packet_t *pkt = malloc(sizeof(packet_t));
-                pkt->ack_count = packet.ack_count;
-                pkt->id = packet.id;
-                pkt->museum_id = packet.museum_id;
-                pkt->request_ts = packet.request_ts;
+                packet_t pkt;
+                pkt.ack_count = packet.ack_count;
+                pkt.id = packet.id;
+                pkt.museum_id = packet.museum_id;
+                pkt.request_ts = packet.request_ts;
 
                 pthread_mutex_lock(&queueJobsMut);
 
                 if (jobs.head == NULL) {
                     debug("SEND1 ACK to %d", packet.src);
-                    sendPacket(pkt, packet.src, ACK_JOB);
+                    sendPacket(&pkt, packet.src, ACK_JOB);
                     pthread_mutex_unlock(&queueJobsMut);
-                    free(pkt);
                     break;
                 }
 
@@ -129,7 +128,7 @@ void *startCommThread(void *ptr) {
                             state == waitForPortal ||
                             state == inWork) {
                             debug("SEND2 ACK to %d", packet.src);
-                            sendPacket(pkt, packet.src, ACK_JOB);
+                            sendPacket(&pkt, packet.src, ACK_JOB);
                             break;
                         }
                     }
@@ -140,10 +139,9 @@ void *startCommThread(void *ptr) {
 
                 if (job_exists == 0) {
                     debug("SEND3 ACK to %d", packet.src);
-                    sendPacket(pkt, packet.src, ACK_JOB);
+                    sendPacket(&pkt, packet.src, ACK_JOB);
                 }
 
-                free(pkt);
                 break;
             }
             case ACK_JOB:
@@ -191,11 +189,11 @@ void *startCommThread(void *ptr) {
                         Node *next_job = current_job->next;
                         jobData *job = (jobData *) current_job->data;
 
-                        packet_t *pkt = malloc(sizeof(packet_t));
-                        pkt->museum_id = job->museum_id;
-                        pkt->id = job->id;
-                        pkt->request_ts = job->request_ts;
-                        pkt->ack_count = job->ack_count;
+                        packet_t pkt;
+                        pkt.museum_id = job->museum_id;
+                        pkt.id = job->id;
+                        pkt.request_ts = job->request_ts;
+                        pkt.ack_count = job->ack_count;
 
                         int museumToDequeue = -1;
                         int jobToDequeue = -1;
@@ -217,7 +215,7 @@ void *startCommThread(void *ptr) {
                                         debug("Send RESERVE");
                                         for (int k = 0; k < size; k++) {
                                             if (k != rank) {
-                                                sendPacket(pkt, k, RESERVE);
+                                                sendPacket(&pkt, k, RESERVE);
                                             }
                                         }
                                         reserved = 1;
@@ -227,7 +225,7 @@ void *startCommThread(void *ptr) {
                                     }
                                 } else {
                                     debug("Send TAKE to %d", req->dwarf_id);
-                                    sendPacket(pkt, req->dwarf_id, TAKE);
+                                    sendPacket(&pkt, req->dwarf_id, TAKE);
                                 }
                                 museumToDequeue = req->job->museum_id;
                                 jobToDequeue = req->job->id;
@@ -249,7 +247,6 @@ void *startCommThread(void *ptr) {
                             current_request = next_request;
                         }
 
-                        free(pkt);
                         removeNode(&jobs, job);
                         current_job = next_job;
                     }
@@ -284,19 +281,17 @@ void *startCommThread(void *ptr) {
 
                 pthread_mutex_unlock(&queueJobsMut);
 
-                packet_t *pkt = malloc(sizeof(packet_t));
-                pkt->museum_id = packet.museum_id;
-                pkt->id = packet.id;
-                pkt->request_ts = packet.request_ts;
-                pkt->ack_count = packet.ack_count;
+                packet_t pkt;
+                pkt.museum_id = packet.museum_id;
+                pkt.id = packet.id;
+                pkt.request_ts = packet.request_ts;
+                pkt.ack_count = packet.ack_count;
 
                 for (int i = 0; i < size; i++) {
                     if (i != rank) {
-                        sendPacket(pkt, i, RESERVE);
+                        sendPacket(&pkt, i, RESERVE);
                     }
                 }
-
-                free(pkt);
 
                 sem_post(&jobAccessGranted);
                 break;
@@ -347,15 +342,15 @@ void *startCommThread(void *ptr) {
             {
                 debug("portal request arrived from: %d portal id: %d rts: %d", packet.src, packet.id, packet.request_ts);
                 
-                packet_t *pkt = malloc(sizeof(packet_t));
-                pkt->id = packet.id;
-                pkt->museum_id = packet.museum_id;
-                pkt->ack_count = packet.ack_count;
-                pkt->request_ts = packet.request_ts;
+                packet_t pkt;
+                pkt.id = packet.id;
+                pkt.museum_id = packet.museum_id;
+                pkt.ack_count = packet.ack_count;
+                pkt.request_ts = packet.request_ts;
 
                 // dwarf is not working - send ack
                 if (state != inWork && state != waitForPortal) {
-                    sendPacket(pkt, packet.src, ACK_PORTAL);
+                    sendPacket(&pkt, packet.src, ACK_PORTAL);
                     break;
                 }
 

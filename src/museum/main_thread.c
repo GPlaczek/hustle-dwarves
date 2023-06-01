@@ -33,20 +33,19 @@ void mainLoop() {
             {
                 packet_t *packet = (packet_t *) packets.head->data;
 
-                packet_t *pkt = malloc(sizeof(packet_t));
-                pkt->id = packet->id;
-                pkt->ack_count = packet->ack_count;
-                pkt->museum_id = packet->museum_id;
-                pkt->request_ts = packet->request_ts;
+                packet_t pkt;
+                pkt.id = packet->id;
+                pkt.ack_count = packet->ack_count;
+                pkt.museum_id = packet->museum_id;
+                pkt.request_ts = packet->request_ts;
 
                 // debug("new %d %d %d %d", pkt->museum_id, pkt->id, pkt->request_ts, pkt->ack_count);
 
                 for (int i = 0; i < size; i++) {
                     if (i != rank) {
-                        sendPacket(pkt, i, NEW_JOB);
+                        sendPacket(&pkt, i, NEW_JOB);
                     }
                 }
-                free(pkt);
                 changeState(waitForReserve);
                 break;
             }

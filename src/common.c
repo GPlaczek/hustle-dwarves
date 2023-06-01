@@ -56,7 +56,7 @@ void init_packet_type() {
 
 void sendPacket(packet_t *pkt, int destination, int tag) {
     int freepkt = 0;
-    if (pkt == 0) {
+    if (pkt == NULL) {
         pkt = malloc(sizeof(packet_t));
         freepkt = 1;
     }
