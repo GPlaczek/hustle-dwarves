@@ -36,9 +36,15 @@ void mainLoop() {
                 }
                 pthread_mutex_unlock(&portalsRequestsMut);
 
-                int job_requested = 0;
+                // int job_requested = 0;
+                
 
                 // if there are any queued jobs - ask for access
+                if (jobs.head == NULL) {
+                    debug("WAIT FOR JOB");
+                    sem_wait(&waitNewJobSem);
+                }
+
                 pthread_mutex_lock(&queueJobsMut);
                 Node *current_job = jobs.head;
                 while (current_job != NULL) {
@@ -56,7 +62,7 @@ void mainLoop() {
                         }
                     }
                     free(pkt);
-                    job_requested = 1;
+                    // job_requested = 1;
 
                     request *req = malloc(sizeof(request));
                     req->dwarf_id = rank;
@@ -71,9 +77,9 @@ void mainLoop() {
                 }
                 pthread_mutex_unlock(&queueJobsMut);
 
-                if (job_requested == 0) {
-                    sem_wait(&waitNewJobSem);
-                }
+                // if (job_requested == 0) {
+                //     sem_wait(&waitNewJobSem);
+                // }
 
                 changeState(waitForJobAccess);
                 break;

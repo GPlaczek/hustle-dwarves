@@ -35,43 +35,43 @@ void *startCommThread(void *ptr) {
                 pthread_mutex_unlock(&queueJobsMut);
                 
                 // send job requests & add request to requests queue
-                if (state != waitForPortal && state != jobAccessed && state != inWork) {
+                // if (state != waitForPortal && state != jobAccessed && state != inWork) {
                     // send requests for all jobs in the jobs queue
-                    pthread_mutex_lock(&queueJobsMut);
-                    Node *current_job = jobs.head;
-                    while (current_job != NULL) {
-                        jobData *job = (jobData *) current_job->data;
+                    // pthread_mutex_lock(&queueJobsMut);
+                    // Node *current_job = jobs.head;
+                    // while (current_job != NULL) {
+                    //     jobData *job = (jobData *) current_job->data;
                         
-                        packet_t *pkt = malloc(sizeof(packet_t));
-                        pkt->museum_id = job->museum_id;
-                        pkt->id = job->id;
-                        pkt->request_ts = lamport_time;
-                        pkt->ack_count = 0;
+                        // packet_t *pkt = malloc(sizeof(packet_t));
+                        // pkt->museum_id = job->museum_id;
+                        // pkt->id = job->id;
+                        // pkt->request_ts = lamport_time;
+                        // pkt->ack_count = 0;
 
-                        for (int i = 0; i < size; i++) {
-                            if (i != rank) {
-                                sendPacket(pkt, i, REQ_JOB);
-                            }
-                        }
-                        free(pkt);
+                        // for (int i = 0; i < size; i++) {
+                        //     if (i != rank) {
+                        //         sendPacket(pkt, i, REQ_JOB);
+                        //     }
+                        // }
+                        // free(pkt);
 
-                        request *req = malloc(sizeof(request));
-                        req->dwarf_id = rank;
-                        req->job = (jobData *) jobs.tail->data;
+                    //     request *req = malloc(sizeof(request));
+                    //     req->dwarf_id = rank;
+                    //     req->job = (jobData *) jobs.tail->data;
 
-                        pthread_mutex_lock(&jobsRequestsMut);
-                        addNode(&jobs_requests, req);
-                        pthread_mutex_unlock(&jobsRequestsMut);
+                    //     pthread_mutex_lock(&jobsRequestsMut);
+                    //     addNode(&jobs_requests, req);
+                    //     pthread_mutex_unlock(&jobsRequestsMut);
 
-                        current_job = current_job->next;
-                    }
-                    pthread_mutex_unlock(&queueJobsMut);
+                    //     current_job = current_job->next;
+                    // }
+                    // pthread_mutex_unlock(&queueJobsMut);
                     
-                    if (state == waitForNewJob) {
-                        sem_post(&waitNewJobSem);
-                        changeState(waitForJobAccess);
-                    }
-                }
+                    // if (state == waitForNewJob) {
+                    sem_post(&waitNewJobSem);
+                        // changeState(waitForJobAccess);
+                    // }
+                // }
                 break;
             }
             case REQ_JOB:
@@ -107,6 +107,7 @@ void *startCommThread(void *ptr) {
                 pthread_mutex_lock(&queueJobsMut);
 
                 if (jobs.head == NULL) {
+                    debug("SEND1 ACK to %d", packet.src);
                     sendPacket(pkt, packet.src, ACK_JOB);
                     pthread_mutex_unlock(&queueJobsMut);
                     free(pkt);
@@ -127,6 +128,7 @@ void *startCommThread(void *ptr) {
                             state == jobAccessed || 
                             state == waitForPortal ||
                             state == inWork) {
+                            debug("SEND2 ACK to %d", packet.src);
                             sendPacket(pkt, packet.src, ACK_JOB);
                             break;
                         }
@@ -137,6 +139,7 @@ void *startCommThread(void *ptr) {
                 pthread_mutex_unlock(&queueJobsMut);
 
                 if (job_exists == 0) {
+                    debug("SEND3 ACK to %d", packet.src);
                     sendPacket(pkt, packet.src, ACK_JOB);
                 }
 
