@@ -81,7 +81,7 @@ void *startCommThread(void *ptr) {
                 pthread_mutex_lock(&queueJobsMut);
 
                 if (jobs.head == NULL) {
-                    debug("SEND1 ACK to %d", packet.src);
+                    // debug("SEND1 ACK to %d", packet.src);
                     sendPacket(&pkt, packet.src, ACK_JOB);
                     pthread_mutex_unlock(&queueJobsMut);
                     break;
@@ -91,7 +91,7 @@ void *startCommThread(void *ptr) {
                 while (current != NULL) {
                     jobData *job = (jobData *) current->data;
 
-                    debug("%d %d | %d %d | %d %d", job->id, packet.id, job->museum_id, packet.museum_id, job->request_ts, packet.request_ts);
+                    // debug("%d %d | %d %d | %d %d", job->id, packet.id, job->museum_id, packet.museum_id, req_lamport, packet.request_ts);
 
                     if (job->id == packet.id && 
                         job->museum_id == packet.museum_id) {
@@ -99,8 +99,9 @@ void *startCommThread(void *ptr) {
                         if (req_lamport > packet.request_ts ||
                             state == jobAccessed || 
                             state == waitForPortal ||
-                            state == inWork) {
-                            debug("SEND2 ACK to %d", packet.src);
+                            state == inWork ||
+                            req_lamport == 0) {
+                            // debug("SEND2 ACK to %d", packet.src);
                             sendPacket(&pkt, packet.src, ACK_JOB);
                             break;
                         }
@@ -111,7 +112,7 @@ void *startCommThread(void *ptr) {
                 pthread_mutex_unlock(&queueJobsMut);
 
                 if (job_exists == 0) {
-                    debug("SEND3 ACK to %d", packet.src);
+                    // debug("SEND3 ACK to %d", packet.src);
                     sendPacket(&pkt, packet.src, ACK_JOB);
                 }
 
@@ -146,8 +147,6 @@ void *startCommThread(void *ptr) {
 
                 pthread_mutex_lock(&jobsRequestsMut);
 
-                int reserved = 0;
-
                 // distribute jobs
                 if (on_duty) {
                     Node *current_job = jobs.head;
@@ -180,7 +179,7 @@ void *startCommThread(void *ptr) {
                         current_job = jobs.head;
                         job = current_job->data;
                         while (current_job != NULL) {
-                            debug("REQ %d %d %d | %d %d", req->dwarf_id, req->job->museum_id, job->museum_id, req->job->id, job->id);
+                            // debug("REQ %d %d %d | %d %d", req->dwarf_id, req->job->museum_id, job->museum_id, req->job->id, job->id);
                             // In theory, it should work but I haven't seen it do anything actually
                             if (req->job->museum_id == job->museum_id &&
                                 req->job->id == job->id) {
@@ -291,7 +290,7 @@ void *startCommThread(void *ptr) {
                     if (req != NULL && req->job != NULL) {
                         if (packet.museum_id == req->job->museum_id &&
                             packet.id == req->job->id) {
-                            debug("dequeue %d %d %d", req->dwarf_id, req->job->museum_id, req->job->id);
+                            // debug("dequeue %d %d %d", req->dwarf_id, req->job->museum_id, req->job->id);
                             removeNode(&jobs_requests, req);
                         }
                     }
