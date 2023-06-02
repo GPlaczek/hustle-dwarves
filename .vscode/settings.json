@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "comm_thread.h": "c",
+        "main.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "span": "c",
+        "list.h": "c",
+        "deque": "c",
+        "list": "c",
+        "vector": "c"
+    }
+}
