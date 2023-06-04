@@ -211,8 +211,8 @@ void *startCommThread(void *ptr) {
                         if (job != NULL) removeNode(&jobs, job);
                         removeNode(&jobs_requests, current_request);
                     }
+                    sem_post(&jobAccessGranted);
                 }
-                sem_post(&jobAccessGranted);
                 pthread_mutex_unlock(&jobsRequestsMut);
                 pthread_mutex_unlock(&queueJobsMut);
                 break;
